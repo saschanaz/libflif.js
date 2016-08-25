@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "suppressImplicitAnyIndexErrors": true
+    },
+    "files": [
+        "Jakefile-main.ts",
+        "node_modules/@types/node/index.d.ts",
+        "node_modules/@types/glob/index.d.ts",
+        "node_modules/@types/jake/index.d.ts"
+    ]
+}

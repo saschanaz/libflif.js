@@ -1,0 +1,28 @@
+{
+  "name": "libflif.js",
+  "version": "1.0.0",
+  "description": "Another trial to bring FLIF to the web platform",
+  "main": "lib/libflif.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SaschaNaz/libflif.js.git"
+  },
+  "keywords": [
+    "flif"
+  ],
+  "author": "Kagami Sascha Rosylight",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SaschaNaz/libflif.js/issues"
+  },
+  "homepage": "https://github.com/SaschaNaz/libflif.js#readme",
+  "devDependencies": {
+    "@types/glob": "^5.0.29",
+    "@types/jake": "0.0.27",
+    "@types/node": "^6.0.37",
+    "glob": "^7.0.5"
+  }
+}
