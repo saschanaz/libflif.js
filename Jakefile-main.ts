@@ -56,7 +56,7 @@ const jakeAsyncTaskOptionBag: jake.TaskOptions = {
 
 desc("Build FLIF encoding/decoding tool");
 task("flif", [], () => {
-    const command = `${cxx} -std=c++11 -D DECODER_ONLY ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o flif.js`;
+    const command = `${cxx} -std=c++11 -D DECODER_ONLY ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
     console.log(command);
     jake.exec([command], () => {
         complete();
