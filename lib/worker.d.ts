@@ -1,6 +1,6 @@
 interface libflifem {
 }
-declare function _libflifem(): EmscriptenModule & libflifem;
+declare function _libflifem(options: any): EmscriptenModule & libflifem;
 declare const libflifem: EmscriptenModule & libflifem;
 declare function convert(input: ArrayBuffer): Uint8Array;
 declare module EmscriptenUtility {
