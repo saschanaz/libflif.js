@@ -6,7 +6,7 @@ interface libflifem {
 
 declare function _libflifem(options: any): EmscriptenModule & libflifem;
 
-const libflifem = _libflifem({ filePackagePrefixURL: "built/" });
+const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
 
 function convert(input: ArrayBuffer) {
     libflifem.FS.writeFile("input.flif", new Uint8Array(input), { encoding: "binary" });
