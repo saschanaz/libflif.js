@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>jxrlib.js Testing Page</title>
+  <link rel="stylesheet" href="sample/app.css" type="text/css" />
+  <script>
+  var dir = window.URLSearchParams && new URL(window.location).searchParams.get("dev") === "1" ? "built" : "lib"
+  document.write(`<script src="${dir}/flif.js"></` + 'script>');
+  document.write(`<script src="${dir}/worker.js"></` + 'script>');
+  document.write(`<script src="${dir}/app.js"></` + 'script>');
+  </script>
+</head>
+<body>
+  <h1>flif.js Testing Page</h1>
+
+  <div id="decodeContent">
+    <p>
+      Load a FLIF file to decode: <input type="file" onchange="clearMessage(); decodeSelectedFile(this.files[0])" accept=".flif,image/x-flif" /><br />
+    </p>
+    <p>
+      <input type="button" onclick="loadSample()" value="Load Lenna.flif" /><br />
+    </p>
+  </div>
+  <div id="encodeContent">
+    <p>
+      Load an image file to encode: <input type="file" onchange="clearMessage(); encodeSelectedFile(this.files[0])" accept="image/*" /><br />
+    </p>
+  </div>
+  <div id="message"></div>
+  <img id="image" />
+</body>
+</html>

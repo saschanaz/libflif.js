@@ -7,6 +7,7 @@ const ports = "-s USE_LIBPNG=1 -s USE_ZLIB=1";
 const bind = "--bind wrapper/bind.cpp";
 const optimizations = "-D NDEBUG -O2 -ftree-vectorize";
 const libOptimizations = "-D NDEBUG -O2";
+const endianness = "-D __clang__";
 
 // copied file list on the upstream makefile
 // JSON.stringify((list).split(" "), null, 4)
@@ -26,25 +27,26 @@ const filesH = [
     "compiler-specific.hpp"
 ].map(item => appendDir(item)).join(' ');
 const filesCpp = [
+    "maniac/util.cpp",
     "maniac/chance.cpp",
-    "maniac/symbol.cpp",
+    // "maniac/symbol.cpp",
     "image/crc32k.cpp",
     "image/image.cpp",
     "image/image-png.cpp",
     "image/image-pnm.cpp",
     "image/image-pam.cpp",
-    "image/image-rggb.cpp",
-    "image/image-metadata.cpp",
+    // "image/image-rggb.cpp",
+    // "image/image-metadata.cpp",
     "image/color_range.cpp",
     "transform/factory.cpp",
-    "common.cpp",
-    "flif-enc.cpp",
-    "flif-dec.cpp",
-    "io.cpp"
+    // "common.cpp",
+    // "flif-enc.cpp",
+    // "flif-dec.cpp",
+    // "io.cpp"
 ].map(item => appendDir(item)).join(' ');
 
 function appendDir(path: string) {
-    return `submodules/flif/src/${path}`;
+    return `submodules/flif/${path}`;
 }
 
 const jakeExecOptionBag: jake.ExecOptions = {
@@ -58,7 +60,7 @@ const jakeAsyncTaskOptionBag: jake.TaskOptions = {
 
 desc("Build FLIF encoding/decoding tool");
 task("flif", [], () => {
-    const command = `${cxx} -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
+    const command = `${cxx} -s INVOKE_RUN=0 ${endianness} -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
     console.log(command);
     jake.exec([command], () => {
         complete();

@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "noImplicitAny": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "declaration": true,
+        "outDir": "../built/"
+    },
+    "files": [
+        "worker.ts",
+        "module.d.ts"
+    ]
+}

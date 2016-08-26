@@ -1,0 +1,15 @@
+﻿@-ms-viewport {
+  width: device-width;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+span {
+    font-style: italic;
+}
+
+img {
+  max-width: 100%;
+}
