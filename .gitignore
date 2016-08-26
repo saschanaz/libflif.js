@@ -1,5 +1,12 @@
 # Build result
 built/
+Jakefile-main.js
+wrapper/wrapper.js
+
+# VSCode DB files
+*.VC.DB
+*.VC.DB-shm
+*.VC.DB-wal
 
 # Logs
 logs
