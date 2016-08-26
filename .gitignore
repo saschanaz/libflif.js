@@ -1,7 +1,7 @@
 # Build result
 built/
 Jakefile-main.js
-wrapper/wrapper.js
+wrapper/*.js
 
 # VSCode DB files
 *.VC.DB

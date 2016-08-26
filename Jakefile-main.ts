@@ -1,8 +1,9 @@
 import glob = require("glob");
 
 const cxx = "em++";
+const exportName = "-s EXPORT_NAME='_libflifem' -s MODULARIZE='1'";
 const ports = "-s USE_LIBPNG=1 -s USE_ZLIB=1";
-const exportedFunctions = "-s EXPORTED_FUNCTIONS=['_iconv_open','_iconv','_iconv_close','_get_errno']";
+const exportedFunctions = "-s EXPORTED_FUNCTIONS=['_main']";
 const optimizations = "-D NDEBUG -O2 -ftree-vectorize";
 const libOptimizations = "-D NDEBUG -O2";
 
@@ -56,7 +57,7 @@ const jakeAsyncTaskOptionBag: jake.TaskOptions = {
 
 desc("Build FLIF encoding/decoding tool");
 task("flif", [], () => {
-    const command = `${cxx} -std=c++11 -D DECODER_ONLY ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
+    const command = `${cxx} -std=c++11 ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
     console.log(command);
     jake.exec([command], () => {
         complete();
