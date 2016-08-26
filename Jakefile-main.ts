@@ -1,9 +1,10 @@
 import glob = require("glob");
+import fs = require("fs");
 
 const cxx = "em++";
-const exportName = "-s EXPORT_NAME='_libflifem' -s MODULARIZE='1'";
+const exportName = "-s EXPORT_NAME='_libflifem' -s MODULARIZE=1";
 const ports = "-s USE_LIBPNG=1 -s USE_ZLIB=1";
-const exportedFunctions = "-s EXPORTED_FUNCTIONS=['_main']";
+const bind = "--bind wrapper/bind.cpp";
 const optimizations = "-D NDEBUG -O2 -ftree-vectorize";
 const libOptimizations = "-D NDEBUG -O2";
 
@@ -57,7 +58,7 @@ const jakeAsyncTaskOptionBag: jake.TaskOptions = {
 
 desc("Build FLIF encoding/decoding tool");
 task("flif", [], () => {
-    const command = `${cxx} -std=c++11 ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
+    const command = `${cxx} -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
     console.log(command);
     jake.exec([command], () => {
         complete();
@@ -66,4 +67,9 @@ task("flif", [], () => {
 
 desc("Builds libflif.js");
 task("default", ["flif"], () => {
+    // move .js.mem file to the top directory, because of emscripten #4513
+    if (fs.existsSync("filf.js.mem")) {
+        fs.unlinkSync("flif.js.mem");
+    }
+    fs.renameSync("built/flif.js.mem", "flif.js.mem")
 });
