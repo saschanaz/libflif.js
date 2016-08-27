@@ -1,7 +1,7 @@
 ﻿declare var image: HTMLImageElement;
 declare var message: HTMLDivElement;
 
-declare function saveAs(data: Blob|File, filename?: string, disableAutoBOM?: boolean): void;
+declare function saveAs(data: Blob | File, filename?: string, disableAutoBOM?: boolean): void;
 
 const decoderCanvas = document.createElement("canvas");
 const decoderContext = decoderCanvas.getContext("2d");
@@ -13,20 +13,26 @@ async function decodeSelectedFile(file: Blob) {
     reader.onload = () => resolve(reader.result);
     reader.readAsArrayBuffer(file);
   });
-  show(new Blob([await libflif.decode(arrayBuffer)]));
-  // JxrLib.decodeAsBlob(file).then(show)
-  //   .then(function () { stackMessage("Successfully decoded."); })
-  //   .catch(function () { stackMessage("Decoding failed."); });
+  try {
+    show(new Blob([await libflif.decode(arrayBuffer)]));
+    stackMessage("Successfully decoded.");
+  }
+  catch (err) {
+    stackMessage("Decoding failed.");
+  }
 }
 async function decodeArrayBuffer(arrayBuffer: ArrayBuffer) {
   stackMessage("Decoding...");
-  show(new Blob([await libflif.decode(arrayBuffer)]));
-  // JxrLib.decodeAsBlob(file).then(show)
-  //   .then(function () { stackMessage("Successfully decoded."); })
-  //   .catch(function () { stackMessage("Decoding failed."); });
+  try {
+    show(new Blob([await libflif.decode(arrayBuffer)]));
+    stackMessage("Successfully decoded.");
+  }
+  catch (err) {
+    stackMessage("Decoding failed.");
+  }
 }
 async function encodeSelectedFile(file: Blob) {
-  stackMessage("Encoding...");
+  stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB PNG file...`);
   const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
@@ -34,7 +40,7 @@ async function encodeSelectedFile(file: Blob) {
   });
   const result = await libflif.encode(arrayBuffer);
   saveAs(new Blob([result]), "output.flif");
-  stackMessage("Successfully encoded and now decoding again by libflif.js....");
+  stackMessage(`Successfully encoded as ${(result.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
   show(new Blob([await libflif.decode(result)]));
   // var blob;
 
