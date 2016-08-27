@@ -1,10 +1,13 @@
 ﻿declare var image: HTMLImageElement;
 declare var message: HTMLDivElement;
+declare var flifLibDir: string;
 
 declare function saveAs(data: Blob|File, filename?: string, disableAutoBOM?: boolean): void;
 
 const decoderCanvas = document.createElement("canvas");
 const decoderContext = decoderCanvas.getContext("2d");
+
+libflif.startWorker(flifLibDir);
 
 async function decodeSelectedFile(file: Blob) {
   stackMessage("Decoding...");
@@ -13,14 +16,14 @@ async function decodeSelectedFile(file: Blob) {
     reader.onload = () => resolve(reader.result);
     reader.readAsArrayBuffer(file);
   });
-  show(new Blob([decode(arrayBuffer)]));
+  show(new Blob([await libflif.decode(arrayBuffer)]));
   // JxrLib.decodeAsBlob(file).then(show)
   //   .then(function () { stackMessage("Successfully decoded."); })
   //   .catch(function () { stackMessage("Decoding failed."); });
 }
-function decodeArrayBuffer(arrayBuffer: ArrayBuffer) {
+async function decodeArrayBuffer(arrayBuffer: ArrayBuffer) {
   stackMessage("Decoding...");
-  show(new Blob([decode(arrayBuffer)]));
+  show(new Blob([await libflif.decode(arrayBuffer)]));
   // JxrLib.decodeAsBlob(file).then(show)
   //   .then(function () { stackMessage("Successfully decoded."); })
   //   .catch(function () { stackMessage("Decoding failed."); });
@@ -32,10 +35,10 @@ async function encodeSelectedFile(file: Blob) {
     reader.onload = () => resolve(reader.result);
     reader.readAsArrayBuffer(file);
   });
-  const result = encode(arrayBuffer);
+  const result = await libflif.encode(arrayBuffer);
   saveAs(new Blob([result]), "output.flif");
   stackMessage("Successfully encoded and now decoding again by libflif.js....");
-  show(new Blob([decode(result.buffer)]));
+  show(new Blob([await libflif.decode(result)]));
   // var blob;
 
   // JxrLib.encodeAsBlob(file)
@@ -65,11 +68,11 @@ async function encodeSelectedFile(file: Blob) {
   //   })
   //   .catch(function () { stackMessage("Encoding failed."); });
 }
-function encodeArrayBuffer(arrayBuffer: ArrayBuffer) {
+async function encodeArrayBuffer(arrayBuffer: ArrayBuffer) {
   stackMessage("Encoding...");
-  const result = encode(arrayBuffer);
+  const result = await libflif.encode(arrayBuffer);
   stackMessage("Successfully encoded and now decoding again by libflif.js....");
-  show(new Blob([decode(result.buffer)]));
+  show(new Blob([await libflif.decode(result)]));
 }
 
 async function loadSample() {

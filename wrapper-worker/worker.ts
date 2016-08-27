@@ -1,4 +1,30 @@
-// This should later be a Web Worker, currently this is just a normal script 
+// This should later be a Web Worker, currently this is just a normal script
+
+importScripts("flif.js");
+
+interface libflifWrapperMessageData {
+    type: "encode" | "decode";
+    uuid: string;
+    input: ArrayBuffer;
+}
+interface libflifWrapperMessageEvent extends MessageEvent {
+    data: libflifWrapperMessageData;
+}
+
+self.addEventListener("message", (ev: libflifWrapperMessageEvent) => {
+    if (ev.data.type === "decode") {
+        (self as any as Worker).postMessage({
+            uuid: ev.data.uuid,
+            result: decode(ev.data.input)
+        });
+    }
+    else {
+        (self as any as Worker).postMessage({
+            uuid: ev.data.uuid,
+            result: encode(ev.data.input)
+        });
+    }
+})
 
 interface libflifem {
 
@@ -11,7 +37,7 @@ function decode(input: ArrayBuffer) {
     const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
     libflifem.FS.writeFile("input.flif", new Uint8Array(input), { encoding: "binary" });
     libflifem.callMain(["-d", "input.flif", "output.png"]);
-    return libflifem.FS.readFile("output.png");
+    return libflifem.FS.readFile("output.png").buffer;
 }
 
 function encode(input: ArrayBuffer) {
@@ -19,8 +45,8 @@ function encode(input: ArrayBuffer) {
     const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
     libflifem.FS.writeFile("input.png", new Uint8Array(input), { encoding: "binary" });
     libflifem.callMain(["input.png", "output.flif"]);
-    return libflifem.FS.readFile("output.flif");
-} 
+    return libflifem.FS.readFile("output.flif").buffer;
+}
 
 namespace EmscriptenUtility {
     export interface AllocatedArray {
