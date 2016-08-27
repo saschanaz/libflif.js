@@ -1,0 +1,21 @@
+language: node_js
+
+node_js:
+  - 'node' # latest
+
+sudo: false
+
+branches:
+  only:
+  - master
+
+install:
+  - npm install
+  - npm update
+
+cache:
+  directories:
+    - node_modules
+
+git:
+  depth: 1
