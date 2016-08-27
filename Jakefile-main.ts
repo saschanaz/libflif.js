@@ -59,7 +59,7 @@ const jakeAsyncTaskOptionBag: jake.TaskOptions = {
 
 desc("Build FLIF encoding/decoding tool");
 task("flif", [], () => {
-    const command = `${cxx} -s INVOKE_RUN=0 -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
+    const command = `${cxx} -s INVOKE_RUN=0 -s TOTAL_MEMORY=134217728 -s DEMANGLE_SUPPORT=1 -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
     console.log(command);
     jake.exec([command], () => {
         complete();

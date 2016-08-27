@@ -1,20 +1,28 @@
 // This should later be a Web Worker, currently this is just a normal script 
 
 interface libflifem {
-    
+
 }
 
 declare function _libflifem(options: any): EmscriptenModule & libflifem;
 
-const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
-
-function convert(input: ArrayBuffer) {
+function decode(input: ArrayBuffer) {
+    // TODO: module instance should be kept after making it a library
+    const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
     libflifem.FS.writeFile("input.flif", new Uint8Array(input), { encoding: "binary" });
     libflifem.callMain(["-d", "input.flif", "output.png"]);
     return libflifem.FS.readFile("output.png");
 }
 
-module EmscriptenUtility {
+function encode(input: ArrayBuffer) {
+    // TODO: module instance should be kept after making it a library
+    const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
+    libflifem.FS.writeFile("input.png", new Uint8Array(input), { encoding: "binary" });
+    libflifem.callMain(["input.png", "output.flif"]);
+    return libflifem.FS.readFile("output.flif");
+} 
+
+namespace EmscriptenUtility {
     export interface AllocatedArray {
         content: any[];
         pointer: number;

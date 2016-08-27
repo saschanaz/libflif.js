@@ -12,6 +12,7 @@
   document.write(`<script src="${dir}/worker.js"></` + 'script>');
   document.write(`<script src="${dir}/app.js"></` + 'script>');
   </script>
+  <script src="node_modules/file-saver/FileSaver.js"></script>
 </head>
 <body>
   <h1>flif.js Testing Page</h1>
@@ -26,7 +27,7 @@
   </div>
   <div id="encodeContent">
     <p>
-      Load an image file to encode: <input type="file" onchange="clearMessage(); encodeSelectedFile(this.files[0])" accept="image/*" /><br />
+      Load a PNG file to encode: <input type="file" onchange="clearMessage(); encodeSelectedFile(this.files[0])" accept=".png,image/png" /><br />
     </p>
   </div>
   <div id="message"></div>
