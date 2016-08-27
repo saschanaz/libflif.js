@@ -1,8 +1,14 @@
+declare namespace libflif {
+    var libDir: string;
+    var debug: boolean;
+}
+
 namespace libflif {
     interface libflifWorkerMessageData {
         uuid: string;
         error: Error;
         result: ArrayBuffer;
+        debug: string;
     }
     interface libflifWorkerMessageEvent extends MessageEvent {
         data: libflifWorkerMessageData;
@@ -19,15 +25,19 @@ namespace libflif {
     }
     let worker: Worker;
 
-    export function startWorker(path?: string) {
+    export function startWorker() {
         if (worker) {
             return;
         }
-        if (path) {
-            worker = new Worker(`${path}/worker.js`);
+        worker = new Worker(`${libDir ? libDir + '/' : ""}worker.js`);
+        if (!debug) {
             return;
         }
-        worker = new Worker("worker.js");
+        worker.addEventListener("message", (ev: libflifWorkerMessageEvent) => {
+            if (ev.data.debug) {
+                debugLog(`worker: ${ev.data.debug}`);
+            }
+        })
     }
 
     export function decode(input: ArrayBuffer | Blob) {
@@ -55,9 +65,12 @@ namespace libflif {
                     reject(ev.data.error);
                     return;
                 }
+                debugLog(`received ${type} result from worker.`);
                 resolve(ev.data.result);
             }
             worker.addEventListener("message", listener);
+
+            debugLog(`sending data for ${type} to worker.`);
             worker.postMessage({ type, uuid, input })
         })
     }
@@ -68,6 +81,12 @@ namespace libflif {
             reader.onload = () => resolve(reader.result);
             reader.readAsArrayBuffer(blob);
         });
+    }
+
+    function debugLog(text: string) {
+        if (debug) {
+            console.log(`libflif: ${text} ${new Date()}`)
+        }
     }
 
     export function observeDOM() {

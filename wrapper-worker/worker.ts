@@ -12,17 +12,33 @@ interface libflifWrapperMessageEvent extends MessageEvent {
 }
 
 self.addEventListener("message", (ev: libflifWrapperMessageEvent) => {
-    if (ev.data.type === "decode") {
-        (self as any as Worker).postMessage({
-            uuid: ev.data.uuid,
-            result: decode(ev.data.input)
-        });
+    (self as any as Worker).postMessage({
+        debug: `received data for ${ev.data.type}.`
+    });
+    try {
+        if (ev.data.type === "decode") {
+            const result = decode(ev.data.input);
+            (self as any as Worker).postMessage({
+                debug: `decode complete, sending data to wrapper.`
+            });
+            (self as any as Worker).postMessage({
+                uuid: ev.data.uuid,
+                result
+            });
+        }
+        else {
+            const result = encode(ev.data.input);
+            (self as any as Worker).postMessage({
+                debug: `encode complete, sending data to wrapper.`
+            });
+            (self as any as Worker).postMessage({
+                uuid: ev.data.uuid,
+                result
+            });
+        }
     }
-    else {
-        (self as any as Worker).postMessage({
-            uuid: ev.data.uuid,
-            result: encode(ev.data.input)
-        });
+    catch (error) {
+        (self as any as Worker).postMessage({ error });
     }
 })
 

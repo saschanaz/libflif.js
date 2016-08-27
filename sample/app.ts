@@ -1,13 +1,10 @@
 ﻿declare var image: HTMLImageElement;
 declare var message: HTMLDivElement;
-declare var flifLibDir: string;
 
 declare function saveAs(data: Blob|File, filename?: string, disableAutoBOM?: boolean): void;
 
 const decoderCanvas = document.createElement("canvas");
 const decoderContext = decoderCanvas.getContext("2d");
-
-libflif.startWorker(flifLibDir);
 
 async function decodeSelectedFile(file: Blob) {
   stackMessage("Decoding...");
