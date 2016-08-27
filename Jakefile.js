@@ -50,3 +50,11 @@ task("default", ["js"], () => {
         complete();
     }, jakeExecOptionBag);
 }, jakeAsyncTaskOptionBag);
+
+desc("Clean");
+task("clean", [], () => {
+    console.log("Cleaning...");
+    jake.exec(["rm -r built/"], () => {
+        complete();
+    }, jakeExecOptionBag);
+}, jakeAsyncTaskOptionBag);
