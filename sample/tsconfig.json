@@ -8,7 +8,7 @@
     "files": [
         "app.ts",
         "../node_modules/@types/whatwg-fetch/index.d.ts",
-		"../node_modules/@types/whatwg-streams/index.d.ts",
+		//"../node_modules/@types/whatwg-streams/index.d.ts",
         "../wrapper-worker/module.d.ts",
         "../built/worker.d.ts"
     ]

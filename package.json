@@ -4,7 +4,7 @@
   "description": "Another trial to bring FLIF to the web platform",
   "main": "lib/libflif.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "jake"
   },
   "repository": {
     "type": "git",
@@ -24,6 +24,7 @@
     "@types/jake": "0.0.27",
     "@types/node": "^6.0.37",
     "@types/whatwg-fetch": "0.0.30",
-    "glob": "^7.0.5"
+    "glob": "^7.0.5",
+    "jake": "latest"
   }
 }
