@@ -6,6 +6,7 @@ const exportName = "-s EXPORT_NAME='_libflifem' -s MODULARIZE=1 -s EXTRA_EXPORTE
 const ports = "-s USE_LIBPNG=1 -s USE_ZLIB=1";
 const bind = "--bind wrapper/bind.cpp";
 const optimizations = "-D NDEBUG -ftree-vectorize"; // disable -O2 temporarily (emscripten #4519)
+const flags = "-D LODEPNG_NO_COMPILE_PNG -D LODEPNG_NO_COMPILE_DISK";
 const libOptimizations = "-D NDEBUG -O2";
 
 // copied file list on the upstream makefile
@@ -23,29 +24,30 @@ const filesH = [
     "io.hpp",
     "io.cpp",
     "config.h",
-    "compiler-specific.hpp"
+    "compiler-specific.hpp",
+    // "../extern/lodepng.h"
 ].map(item => appendDir(item)).join(' ');
 const filesCpp = [
-    "maniac/util.cpp",
     "maniac/chance.cpp",
-    // "maniac/symbol.cpp",
+    "maniac/symbol.cpp",
     "image/crc32k.cpp",
     "image/image.cpp",
     "image/image-png.cpp",
     "image/image-pnm.cpp",
     "image/image-pam.cpp",
-    // "image/image-rggb.cpp",
-    // "image/image-metadata.cpp",
+    "image/image-rggb.cpp",
+    "image/image-metadata.cpp",
     "image/color_range.cpp",
     "transform/factory.cpp",
-    // "common.cpp",
-    // "flif-enc.cpp",
-    // "flif-dec.cpp",
-    // "io.cpp"
+    "common.cpp",
+    "flif-enc.cpp",
+    "flif-dec.cpp",
+    "io.cpp",
+    // "../extern/lodepng.cpp"
 ].map(item => appendDir(item)).join(' ');
 
 function appendDir(path: string) {
-    return `submodules/flif/${path}`;
+    return `submodules/flif/src/${path}`;
 }
 
 const jakeExecOptionBag: jake.ExecOptions = {
@@ -59,7 +61,7 @@ const jakeAsyncTaskOptionBag: jake.TaskOptions = {
 
 desc("Build FLIF encoding/decoding tool");
 task("flif", [], () => {
-    const command = `${cxx} -s INVOKE_RUN=0 -s TOTAL_MEMORY=134217728 -s DEMANGLE_SUPPORT=1 -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
+    const command = `${cxx} ${flags} -s INVOKE_RUN=0 -s TOTAL_MEMORY=134217728 -s DEMANGLE_SUPPORT=1 -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
     console.log(command);
     jake.exec([command], () => {
         complete();
