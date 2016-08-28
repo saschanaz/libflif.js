@@ -11,6 +11,7 @@
   libflif.libDir = window.URLSearchParams && new URL(window.location).searchParams.get("dev") === "1" ? "built" : "lib";
   libflif.debug = true;
   document.write(`<script src="${libflif.libDir}/wrapper.js"></` + 'script>');
+  // document.write(`<script src="${libflif.libDir}/libflif.js"></` + 'script>'); // for debug use
   document.write(`<script src="${libflif.libDir}/app.js"></` + 'script>');
   </script>
   <script src="node_modules/file-saver/FileSaver.js"></script>
