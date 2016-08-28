@@ -6,9 +6,17 @@ declare namespace libflif {
 namespace libflif {
     interface libflifWorkerMessageData {
         uuid: string;
-        error: Error;
+        error: string;
         result: ArrayBuffer;
         debug: string;
+        progress: libflifProgressiveDecodingResult;
+    }
+    export interface libflifProgressiveDecodingResult {
+        quality: number;
+        bytesRead: number;
+        width: number;
+        height: number;
+        buffer: ArrayBuffer; // actually SharedArrayBuffer
     }
     interface libflifWorkerMessageEvent extends MessageEvent {
         data: libflifWorkerMessageData;
@@ -40,15 +48,15 @@ namespace libflif {
         })
     }
 
-    export function decode(input: ArrayBuffer | Blob) {
-        return sendMessage("decode", input);
+    export async function decode(input: ArrayBuffer | Blob, callback: (result: libflifProgressiveDecodingResult) => any) {
+        await sendMessage("decode", input, callback);
     }
 
     export function encode(input: ArrayBuffer | Blob) {
         return sendMessage("encode", input);
     }
 
-    async function sendMessage(type: "decode" | "encode", input: ArrayBuffer | Blob) {
+    async function sendMessage(type: "decode" | "encode", input: ArrayBuffer | Blob, callback?: (result: libflifProgressiveDecodingResult) => any) {
         startWorker();
 
         const arrayBuffer = input instanceof Blob ? await convertToArrayBuffer(input) : input;
@@ -59,14 +67,23 @@ namespace libflif {
                 if (ev.data.uuid !== uuid) {
                     return;
                 }
-                worker.removeEventListener("message", listener);
 
                 if (ev.data.error) {
                     reject(ev.data.error);
                     return;
                 }
                 debugLog(`received ${type} result from worker.`);
-                resolve(ev.data.result);
+                if (!ev.data.progress) {
+                    worker.removeEventListener("message", listener);
+                    resolve(ev.data.result);
+                }
+                else {
+                    callback(ev.data.progress);
+                    if (ev.data.progress.quality === 1) {
+                        worker.removeEventListener("message", listener);
+                        resolve();
+                    }
+                }
             }
             worker.addEventListener("message", listener);
 

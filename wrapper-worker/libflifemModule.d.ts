@@ -10,10 +10,10 @@ declare interface FLIFImage extends EmscriptenClass {
     depth: number;
     frameDelay: number;
 
-    writeRowRGBA8(): void;
-    readRowRGBA8(): void;
-    writeRowRGBA16(): void;
-    readRowRGBA16(): void;
+    writeRowRGBA8(row: number): void;
+    readRowRGBA8(row: number): Uint8Array;
+    writeRowRGBA16(row: number): void;
+    readRowRGBA16(row: number): void;
 }
 
 declare interface FLIFImageConstructor {

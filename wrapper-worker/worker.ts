@@ -1,6 +1,10 @@
 // This should later be a Web Worker, currently this is just a normal script
 
-importScripts("flif.js");
+importScripts("libflif.js");
+
+declare class SharedArrayBuffer extends ArrayBuffer {
+
+}
 
 interface libflifWrapperMessageData {
     type: "encode" | "decode";
@@ -17,14 +21,15 @@ self.addEventListener("message", (ev: libflifWrapperMessageEvent) => {
     });
     try {
         if (ev.data.type === "decode") {
-            const result = decode(ev.data.input);
-            (self as any as Worker).postMessage({
-                debug: `decode complete, sending data to wrapper.`
-            });
-            (self as any as Worker).postMessage({
-                uuid: ev.data.uuid,
-                result
-            });
+            decode(ev.data.uuid, ev.data.input);
+
+            // (self as any as Worker).postMessage({
+            //     debug: `decode complete, sending data to wrapper.`
+            // });
+            // (self as any as Worker).postMessage({
+            //     uuid: ev.data.uuid,
+            //     result
+            // });
         }
         else {
             const result = encode(ev.data.input);
@@ -37,28 +42,65 @@ self.addEventListener("message", (ev: libflifWrapperMessageEvent) => {
             });
         }
     }
-    catch (error) {
-        (self as any as Worker).postMessage({ error });
+    catch (err) {
+        (self as any as Worker).postMessage({ error: err.stack || err.message || "Unknown error occurred" });
     }
 })
 
-interface libflifem {
+const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
 
-}
-
-declare function _libflifem(options: any): EmscriptenModule & libflifem;
-
-function decode(input: ArrayBuffer) {
-    // TODO: module instance should be kept after making it a library
-    const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
+function decode(uuid: string, input: ArrayBuffer) {
     libflifem.FS.writeFile("input.flif", new Uint8Array(input), { encoding: "binary" });
-    libflifem.callMain(["-d", "input.flif", "output.png"]);
-    return libflifem.FS.readFile("output.png").buffer;
+    const decoder = new libflifem.FLIFDecoder();
+    let bufferView: Uint8Array;
+    const callback = libflifem.Runtime.addFunction((quality: number, bytesRead: number) => {
+        const firstFrame = decoder.getImage(0);
+        if (typeof SharedArrayBuffer === "undefined") {
+            // no SharedArrayBuffer, create new ArrayBuffer every time 
+            bufferView = new Uint8Array(new ArrayBuffer(firstFrame.width * firstFrame.height * 4));
+        }
+        else if (!bufferView) {
+            // supports SharedArrayBuffer
+            bufferView = new Uint8Array(new SharedArrayBuffer(firstFrame.width * firstFrame.height * 4));
+        }
+        for (let i = 0; i < firstFrame.height; i++) {
+            const row = firstFrame.readRowRGBA8(i);
+            const offset = firstFrame.width * 4 * i;
+            bufferView.set(row, offset);
+        }
+
+        try {
+            (self as any as Worker).postMessage({
+                uuid,
+                progress: {
+                    width: firstFrame.width,
+                    height: firstFrame.height,
+                    quality: quality / 10000,
+                    bytesRead,
+                    buffer: bufferView.buffer
+                },
+                debug: `progressive decoding: width=${firstFrame.width} height=${firstFrame.height} quality=${quality}, bytesRead=${bytesRead}`
+            });
+        }
+        catch (err) {
+            (self as any as Worker).postMessage({
+                debug: err.message
+            });
+        }
+        return quality + 1000;
+    });
+    decoder.setCallback(callback);
+    try {
+        decoder.decodeFile("input.flif");
+    }
+    finally {
+        decoder.delete();
+        libflifem.Runtime.removeFunction(callback);
+    }
+    //return libflifem.FS.readFile("output.png").buffer;
 }
 
 function encode(input: ArrayBuffer) {
-    // TODO: module instance should be kept after making it a library
-    const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
     libflifem.FS.writeFile("input.png", new Uint8Array(input), { encoding: "binary" });
     libflifem.callMain(["input.png", "output.flif"]);
     return libflifem.FS.readFile("output.flif").buffer;
@@ -70,7 +112,7 @@ namespace EmscriptenUtility {
         pointer: number;
     }
 
-    function allocateString(em: EmscriptenModule, input: string) {
+    export function allocateString(em: EmscriptenModule, input: string) {
         var array = em.intArrayFromString(input, false);
         var pointer = em._malloc(array.length);
         em.HEAP8.set(new Int8Array(array), pointer);

@@ -14,7 +14,7 @@ async function decodeSelectedFile(file: Blob) {
     reader.readAsArrayBuffer(file);
   });
   try {
-    show(new Blob([await libflif.decode(arrayBuffer)]));
+    await libflif.decode(arrayBuffer, showRaw);
     stackMessage("Successfully decoded.");
   }
   catch (err) {
@@ -24,7 +24,7 @@ async function decodeSelectedFile(file: Blob) {
 async function decodeArrayBuffer(arrayBuffer: ArrayBuffer) {
   stackMessage("Decoding...");
   try {
-    show(new Blob([await libflif.decode(arrayBuffer)]));
+    await libflif.decode(arrayBuffer, showRaw);
     stackMessage("Successfully decoded.");
   }
   catch (err) {
@@ -41,7 +41,7 @@ async function encodeSelectedFile(file: Blob) {
   const result = await libflif.encode(arrayBuffer);
   saveAs(new Blob([result]), "output.flif");
   stackMessage(`Successfully encoded as ${(result.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
-  show(new Blob([await libflif.decode(result)]));
+  await libflif.decode(result, showRaw);
   // var blob;
 
   // JxrLib.encodeAsBlob(file)
@@ -75,7 +75,7 @@ async function encodeArrayBuffer(arrayBuffer: ArrayBuffer) {
   stackMessage("Encoding...");
   const result = await libflif.encode(arrayBuffer);
   stackMessage("Successfully encoded and now decoding again by libflif.js....");
-  show(new Blob([await libflif.decode(result)]));
+  await libflif.decode(result, showRaw);
 }
 
 async function loadSample() {
@@ -84,6 +84,26 @@ async function loadSample() {
 }
 function show(blob: Blob) {
   image.src = URL.createObjectURL(blob, { oneTimeOnly: true });
+}
+async function showRaw(result: libflif.libflifProgressiveDecodingResult) {
+  console.log(`showRaw: ${new Uint8Array(result.buffer)[100]}`)
+  decoderCanvas.width = result.width;
+  decoderCanvas.height = result.height;
+  decoderContext.putImageData(
+    new ImageData(new Uint8ClampedArray(result.buffer), result.width, result.height),
+    0, 0
+  )
+  show(await toBlob(decoderCanvas));
+}
+async function toBlob(canvas: HTMLCanvasElement) {
+  if (canvas.toBlob) {
+    return new Promise<Blob>((resolve, reject) => {
+      (canvas as any).toBlob((blob: Blob) => resolve(blob));
+    });
+  }
+  else if (canvas.msToBlob) {
+    return canvas.msToBlob();
+  }
 }
 function clearMessage() {
   message.textContent = "";

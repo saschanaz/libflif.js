@@ -1,6 +1,7 @@
 #ifndef EMBIND_H
 #define EMBIND_H
 #include <emscripten/bind.h>
+#include <emscripten/val.h>
 using namespace emscripten;
 
 #include <flif.h>
@@ -54,8 +55,12 @@ public:
         flif_image_write_row_RGBA8(this->image, row, (void*)buffer, bufferSizeBytes);
     }
 
-    void readRowRGBA8(uint32_t row, size_t buffer, size_t bufferSizeBytes) {
-        flif_image_read_row_RGBA8(this->image, row, (void*)buffer, bufferSizeBytes);
+    val readRowRGBA8(uint32_t row) {
+        size_t byteLength = this->width() * 4;
+        unsigned char byteBuffer[byteLength];
+
+        flif_image_read_row_RGBA8(this->image, row, (void*)byteBuffer, byteLength);
+        return val(typed_memory_view(byteLength, byteBuffer));
     }
 
     void writeRowRGBA16(uint32_t row, size_t buffer, size_t bufferSizeBytes) {
