@@ -16,7 +16,7 @@ interface EmscriptenModule {
 
     _free(byteOffset: number): void;
     _malloc(size: number): number;
-    
+
     callMain(args: string[]): void;
 
     HEAP8: Int8Array;
@@ -24,6 +24,14 @@ interface EmscriptenModule {
     HEAP32: Int32Array;
 
     FS: FS;
+    Runtime: Runtime;
+}
+
+interface EmscriptenClass {
+    delete(): void;
+    clone(): this;
+    isAliasOf(other: any): boolean;
+    isDeleted(): boolean;
 }
 
 interface FS {
@@ -33,6 +41,11 @@ interface FS {
     readFile(path: string, opts: IOOptionStringBag): string;
     readFile(path: string, opts: IOOptionBag): Uint8Array;
     unlink(path: string): void;
+}
+
+interface Runtime {
+    addFunction(func: Function): number;
+    removeFunction(funcPointer: number): void;
 }
 
 interface IOOptionBag {

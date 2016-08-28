@@ -8,6 +8,7 @@
     },
     "files": [
         "worker.ts",
-        "module.d.ts"
+        "module.d.ts",
+        "libflifemModule.d.ts"
     ]
 }
