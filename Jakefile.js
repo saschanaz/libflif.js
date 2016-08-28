@@ -44,12 +44,17 @@ task("js", ["wrapper", "worker", "sample", "main"], () => {
 });
 
 desc("Run Jakefile-main.js");
-task("default", ["js"], () => {
+task("cpp", ["main"], () => {
     console.log("Building FLIF...");
-    jake.exec(["jake -f Jakefile-main.js"], () => {
+    jake.exec(["jake -f Jakefile-main.js libflif"], () => {
         complete();
     }, jakeExecOptionBag);
 }, jakeAsyncTaskOptionBag);
+
+desc("Run Jakefile-main.js");
+task("default", ["js", "cpp"], () => {
+
+});
 
 desc("Clean");
 task("clean", [], () => {

@@ -7,7 +7,11 @@ const ports = "-s USE_LIBPNG=1 -s USE_ZLIB=1";
 const bind = "--bind wrapper/bind.cpp";
 const optimizations = "-D NDEBUG -ftree-vectorize"; // disable -O2 temporarily (emscripten #4519)
 const flags = "-D LODEPNG_NO_COMPILE_PNG -D LODEPNG_NO_COMPILE_DISK";
-const libOptimizations = "-D NDEBUG -O2";
+const misc = "-s TOTAL_MEMORY=134217728 -s DEMANGLE_SUPPORT=1"
+const libMisc = `${misc} -s RESERVED_FUNCTION_POINTERS=20`;
+const libOptimizations = "-D NDEBUG"; // disable -O2 temporarily (emscripten #4519)
+
+const libraryInclude = `-I ${appendDir("library/")}`
 
 // copied file list on the upstream makefile
 // JSON.stringify((list).split(" "), null, 4)
@@ -59,9 +63,18 @@ const jakeAsyncTaskOptionBag: jake.TaskOptions = {
     async: true
 };
 
-desc("Build FLIF encoding/decoding tool");
-task("flif", [], () => {
-    const command = `${cxx} ${flags} -s INVOKE_RUN=0 -s TOTAL_MEMORY=134217728 -s DEMANGLE_SUPPORT=1 -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
+desc("Build FLIF command-line encoding/decoding tool");
+task("commandline", [], () => {
+    const command = `${cxx} ${flags} -s INVOKE_RUN=0 ${misc} -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
+    console.log(command);
+    jake.exec([command], () => {
+        complete();
+    }, jakeExecOptionBag);
+}, jakeAsyncTaskOptionBag);
+
+desc("Build libflif");
+task("libflif", [], () => {
+    const command = `${cxx} ${flags} ${libMisc} -std=c++11 ${bind} ${exportName} ${ports} ${libOptimizations} -g0 -Wall ${libraryInclude} ${filesCpp} ${appendDir("library/flif-interface.cpp")} -o built/libflif.js`;
     console.log(command);
     jake.exec([command], () => {
         complete();
@@ -69,6 +82,6 @@ task("flif", [], () => {
 }, jakeAsyncTaskOptionBag);
 
 desc("Builds libflif.js");
-task("default", ["flif"], () => {
+task("default", ["commandline"], () => {
 
 });
