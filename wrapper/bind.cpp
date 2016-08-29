@@ -177,7 +177,7 @@ public:
     val encodeToMemory() {
         unsigned char* buffer;
         size_t buffer_size_bytes;
-        const int32_t result = flif_encoder_encode_memory(this->encoder, &buffer, &buffer_size_bytes);
+        const int32_t result = flif_encoder_encode_memory(this->encoder, (void**)&buffer, &buffer_size_bytes);
         if (result == 0) {
             throw std::runtime_error("encodeToMemory failed");
         }
