@@ -67,8 +67,16 @@ public:
         flif_image_write_row_RGBA16(this->image, row, (void*)buffer, bufferSizeBytes);
     }
 
-    void readRowRGBA16(uint32_t row, size_t buffer, size_t bufferSizeBytes) {
-        flif_image_read_row_RGBA16(this->image, row, (void*)buffer, bufferSizeBytes);
+    val readRowRGBA16(uint32_t row) {
+        size_t byteLength = this->width() * 8;
+        unsigned char byteBuffer[byteLength];
+
+        flif_image_read_row_RGBA8(this->image, row, (void*)byteBuffer, byteLength);
+        return val(typed_memory_view(byteLength, byteBuffer));
+    }
+
+    FLIF_IMAGE* original() {
+        return this->image;
     }
 };
 
@@ -143,6 +151,41 @@ public:
     }
 };
 
+class FLIFEncoderWrapper {
+private:
+    FLIF_ENCODER* encoder;
+public:
+    FLIFEncoderWrapper() {
+        this->encoder = flif_create_encoder();
+    }
+
+    ~FLIFEncoderWrapper() {
+        flif_destroy_encoder(this->encoder);
+    }
+
+    void addImage(FLIFImageWrapper* image) {
+        flif_encoder_add_image(this->encoder, image->original());
+    }
+
+    void encodeToFile(std::string filename) {
+        const int32_t result = flif_encoder_encode_file(this->encoder, filename.c_str());
+        if (result == 0) {
+            throw std::runtime_error("encodeToFile failed");
+        }
+    }
+
+    val encodeToMemory() {
+        unsigned char* buffer;
+        size_t buffer_size_bytes;
+        const int32_t result = flif_encoder_encode_memory(this->encoder, &buffer, &buffer_size_bytes);
+        if (result == 0) {
+            throw std::runtime_error("encodeToMemory failed");
+        }
+
+        return val(typed_memory_view(buffer_size_bytes, buffer));
+    }
+};
+
 EMSCRIPTEN_BINDINGS(libflifem) {
     // function("main", &main, allow_raw_pointers());
 
@@ -176,29 +219,13 @@ EMSCRIPTEN_BINDINGS(libflifem) {
         .function("setCallback", &FLIFDecoderWrapper::setCallback)
         .function("setFirstCallbackQuality", &FLIFDecoderWrapper::setFirstCallbackQuality)
         ;
-
     
-
-    // class_<FLIF_DECODER>("FLIFDecoder")
-    //     .constructor()
-    //     .function("decodeFile", &FLIF_DECODER::decode_file, allow_raw_pointers())
-    //     .function("decodeMemory", &FLIF_DECODER::decode_memory, allow_raw_pointers())
-    //     .function("abort", &FLIF_DECODER::abort)
-    //     .function("numImages", &FLIF_DECODER::num_images)
-    //     .function("numLoops", &FLIF_DECODER::num_loops)
-    //     .function("getImage", &FLIF_DECODER::get_image, allow_raw_pointers())
-    //     .property("quality", &FLIF_DECODER::quality)
-    //     .property("scale", &FLIF_DECODER::scale)
-    //     // .property("callback", &FLIF_DECODER::callback, allow_raw_pointers()) // Emscripten #4523
-    //     .property("firstQuality", &FLIF_DECODER::first_quality)
-    //     .property("rw", &FLIF_DECODER::rw)
-    //     .property("rh", &FLIF_DECODER::rh)
-    //     .property("crc_check", &FLIF_DECODER::crc_check)
-    //     .property("fit", &FLIF_DECODER::fit)
-    //     ;
-    
-    // function("setFLIFCallback", &setFlifCallback, allow_raw_pointers());
-    // function("clearFLIFCallback", &clearFlifCallback, allow_raw_pointers());
+    class_<FLIFEncoderWrapper>("FLIFEncoder")
+        .constructor()
+        .function("addImage", &FLIFEncoderWrapper::addImage, allow_raw_pointers())
+        .function("encodeToFile", &FLIFEncoderWrapper::encodeToFile)
+        .function("encodeToMemory", &FLIFEncoderWrapper::encodeToMemory)
+        ;
 }
 
 #endif

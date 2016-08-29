@@ -5,26 +5,13 @@ declare function saveAs(data: Blob | File, filename?: string, disableAutoBOM?: b
 
 const decoderCanvas = document.createElement("canvas");
 const decoderContext = decoderCanvas.getContext("2d");
+const encoderCanvas = document.createElement("canvas");
+const encoderContext = encoderCanvas.getContext("2d");
 
 async function decodeSelectedFile(file: Blob) {
   stackMessage("Decoding...");
-  const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.readAsArrayBuffer(file);
-  });
   try {
-    await libflif.decode(arrayBuffer, showRaw);
-    stackMessage("Successfully decoded.");
-  }
-  catch (err) {
-    stackMessage("Decoding failed.");
-  }
-}
-async function decodeArrayBuffer(arrayBuffer: ArrayBuffer) {
-  stackMessage("Decoding...");
-  try {
-    await libflif.decode(arrayBuffer, showRaw);
+    await libflif.decode(file, showRaw);
     stackMessage("Successfully decoded.");
   }
   catch (err) {
@@ -33,12 +20,9 @@ async function decodeArrayBuffer(arrayBuffer: ArrayBuffer) {
 }
 async function encodeSelectedFile(file: Blob) {
   stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB PNG file...`);
-  const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.readAsArrayBuffer(file);
-  });
-  const result = await libflif.encode(arrayBuffer);
+  const raw = await decodeToRaw(file);
+  stackMessage(`Decoded PNG to raw pixels: width=${raw.width}, height=${raw.height}, size=${raw.arrayBuffer.byteLength}`);
+  const result = await libflif.encode(raw.arrayBuffer, raw.width, raw.height);
   saveAs(new Blob([result]), "output.flif");
   stackMessage(`Successfully encoded as ${(result.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
   await libflif.decode(result, showRaw);
@@ -71,22 +55,16 @@ async function encodeSelectedFile(file: Blob) {
   //   })
   //   .catch(function () { stackMessage("Encoding failed."); });
 }
-async function encodeArrayBuffer(arrayBuffer: ArrayBuffer) {
-  stackMessage("Encoding...");
-  const result = await libflif.encode(arrayBuffer);
-  stackMessage("Successfully encoded and now decoding again by libflif.js....");
-  await libflif.decode(result, showRaw);
-}
 
 async function loadSample() {
   const response = await fetch("sample/Lenna.flif");
-  await decodeArrayBuffer(await response.arrayBuffer()); // stream!
+  const arrayBuffer = await response.arrayBuffer();
+  await libflif.decode(arrayBuffer, showRaw);
 }
 function show(blob: Blob) {
   image.src = URL.createObjectURL(blob, { oneTimeOnly: true });
 }
 async function showRaw(result: libflif.libflifProgressiveDecodingResult) {
-  console.log(`showRaw: ${new Uint8Array(result.buffer)[100]}`)
   decoderCanvas.width = result.width;
   decoderCanvas.height = result.height;
   decoderContext.putImageData(
@@ -94,6 +72,28 @@ async function showRaw(result: libflif.libflifProgressiveDecodingResult) {
     0, 0
   )
   show(await toBlob(decoderCanvas));
+}
+function toArrayBuffer(blob: Blob) {
+  return new Promise<ArrayBuffer>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsArrayBuffer(blob);
+  });
+}
+async function decodeToRaw(blob: Blob) {
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.src = URL.createObjectURL(blob);
+  })
+  encoderCanvas.width = image.naturalWidth;
+  encoderCanvas.height = image.naturalHeight;
+  encoderContext.drawImage(image, 0, 0);
+  return {
+    arrayBuffer: encoderContext.getImageData(0, 0, image.naturalWidth, image.naturalHeight).data.buffer,
+    width: image.naturalWidth,
+    height: image.naturalHeight
+  }
 }
 async function toBlob(canvas: HTMLCanvasElement) {
   if (canvas.toBlob) {

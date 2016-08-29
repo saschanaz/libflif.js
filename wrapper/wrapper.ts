@@ -38,10 +38,10 @@ namespace libflif {
             return;
         }
         worker = new Worker(`${libDir ? libDir + '/' : ""}worker.js`);
-        if (!debug) {
-            return;
-        }
         worker.addEventListener("message", (ev: libflifWorkerMessageEvent) => {
+            if (ev.data.error) {
+                console.error(`worker: ${ev.data.error}`);
+            }
             if (ev.data.debug) {
                 debugLog(`worker: ${ev.data.debug}`);
             }
@@ -49,14 +49,18 @@ namespace libflif {
     }
 
     export async function decode(input: ArrayBuffer | Blob, callback: (result: libflifProgressiveDecodingResult) => any) {
-        await sendMessage("decode", input, callback);
+        await sendMessage("decode", input, { callback });
     }
 
-    export function encode(input: ArrayBuffer | Blob) {
-        return sendMessage("encode", input);
+    export function encode(input: ArrayBuffer | Blob, width: number, height: number) {
+        return sendMessage("encode", input, { imageInfo: { width, height } });
     }
 
-    async function sendMessage(type: "decode" | "encode", input: ArrayBuffer | Blob, callback?: (result: libflifProgressiveDecodingResult) => any) {
+    interface SendMessageBag {
+        callback?: (result: libflifProgressiveDecodingResult) => any;
+        imageInfo?: any;
+    }
+    async function sendMessage(type: "decode" | "encode", input: ArrayBuffer | Blob, bag: SendMessageBag) {
         startWorker();
 
         const arrayBuffer = input instanceof Blob ? await convertToArrayBuffer(input) : input;
@@ -78,7 +82,7 @@ namespace libflif {
                     resolve(ev.data.result);
                 }
                 else {
-                    callback(ev.data.progress);
+                    bag.callback(ev.data.progress);
                     if (ev.data.progress.quality === 1) {
                         worker.removeEventListener("message", listener);
                         resolve();
@@ -88,7 +92,12 @@ namespace libflif {
             worker.addEventListener("message", listener);
 
             debugLog(`sending data for ${type} to worker.`);
-            worker.postMessage({ type, uuid, input })
+            if (bag.imageInfo) {
+                worker.postMessage({ type, uuid, input: arrayBuffer, imageInfo: bag.imageInfo })
+            } 
+            else {
+                worker.postMessage({ type, uuid, input: arrayBuffer })
+            }
         })
     }
 

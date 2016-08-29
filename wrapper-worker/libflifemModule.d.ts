@@ -1,6 +1,7 @@
 interface libflifemModule {
-    FLIFImage: typeof FLIFImage;
-    FLIFDecoder: typeof FLIFDecoder;
+    FLIFImage: FLIFImageConstructor;
+    FLIFDecoder: FLIFDecoderConstructor;
+    FLIFEncoder: FLIFEncoderConstructor;
 }
 
 declare interface FLIFImage extends EmscriptenClass {
@@ -10,20 +11,18 @@ declare interface FLIFImage extends EmscriptenClass {
     depth: number;
     frameDelay: number;
 
-    writeRowRGBA8(row: number): void;
+    writeRowRGBA8(row: number, bufferPointer: number, bufferByteLength: number): void;
     readRowRGBA8(row: number): Uint8Array;
-    writeRowRGBA16(row: number): void;
+    writeRowRGBA16(row: number, bufferPointer: number, bufferByteLength: number): void;
     readRowRGBA16(row: number): void;
 }
 
 declare interface FLIFImageConstructor {
-    new (): FLIFImage;
     prototype: FLIFImage;
 
     create(width: number, height: number): FLIFImage;
     createHDR(width: number, height: number): FLIFImage;
 }
-declare var FLIFImage: FLIFImageConstructor;
 
 declare interface FLIFDecoder extends EmscriptenClass {
     decodeFile(filename: string): void;
@@ -46,6 +45,16 @@ declare interface FLIFDecoderConstructor {
     new (): FLIFDecoder;
     prototype: FLIFDecoder;
 }
-declare var FLIFDecoder: FLIFDecoderConstructor;
+
+declare interface FLIFEncoder extends EmscriptenClass {
+    addImage(image: FLIFImage): void;
+    encodeToFile(filename: string): void;
+    encodeToMemory(): Uint8Array;
+}
+
+declare interface FLIFEncoderConstructor {
+    new (): FLIFEncoder;
+    prototype: FLIFEncoder;
+}
 
 declare function _libflifem(options: any): EmscriptenModule & libflifemModule;

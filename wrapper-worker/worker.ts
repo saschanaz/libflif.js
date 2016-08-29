@@ -10,6 +10,11 @@ interface libflifWrapperMessageData {
     type: "encode" | "decode";
     uuid: string;
     input: ArrayBuffer;
+    imageInfo: ImageInfo;
+}
+interface ImageInfo {
+    width: number;
+    height: number;
 }
 interface libflifWrapperMessageEvent extends MessageEvent {
     data: libflifWrapperMessageData;
@@ -17,7 +22,7 @@ interface libflifWrapperMessageEvent extends MessageEvent {
 
 self.addEventListener("message", (ev: libflifWrapperMessageEvent) => {
     (self as any as Worker).postMessage({
-        debug: `received data for ${ev.data.type}.`
+        debug: `received data for ${ev.data.type}, size=${ev.data.input.byteLength}`
     });
     try {
         if (ev.data.type === "decode") {
@@ -32,7 +37,7 @@ self.addEventListener("message", (ev: libflifWrapperMessageEvent) => {
             // });
         }
         else {
-            const result = encode(ev.data.input);
+            const result = encode(ev.data.input, ev.data.imageInfo.width, ev.data.imageInfo.height);
             (self as any as Worker).postMessage({
                 debug: `encode complete, sending data to wrapper.`
             });
@@ -100,10 +105,30 @@ function decode(uuid: string, input: ArrayBuffer) {
     //return libflifem.FS.readFile("output.png").buffer;
 }
 
-function encode(input: ArrayBuffer) {
-    libflifem.FS.writeFile("input.png", new Uint8Array(input), { encoding: "binary" });
-    libflifem.callMain(["input.png", "output.flif"]);
-    return libflifem.FS.readFile("output.flif").buffer;
+function encode(input: ArrayBuffer, width: number, height: number) {
+    const encoder = new libflifem.FLIFEncoder();
+    const image = libflifem.FLIFImage.create(width, height);
+    const bufferView = new Uint8Array(input);
+    for (let i = 0; i < height; i++) {
+        const size = width * 4;
+        const offset = size * i;
+        const allocated = libflifem._malloc(size);
+        libflifem.HEAP8.set(bufferView.slice(offset, offset + size), allocated);
+        image.writeRowRGBA8(i, allocated, size);
+        libflifem._free(allocated);
+    }
+    encoder.addImage(image);
+
+    let result: ArrayBuffer;
+    try {
+        const encodeView = encoder.encodeToMemory();
+        result = encodeView.buffer.slice(encodeView.byteOffset, encodeView.byteOffset + encodeView.byteLength);
+    }
+    finally {
+        image.delete();
+        encoder.delete();
+    }
+    return result;
 }
 
 namespace EmscriptenUtility {
