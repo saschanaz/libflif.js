@@ -94,7 +94,7 @@ async function decodeToRaw(blob: Blob) {
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.src = URL.createObjectURL(blob);
+    image.src = URL.createObjectURL(blob, { oneTimeOnly: true });
   })
   encoderCanvas.width = image.naturalWidth;
   encoderCanvas.height = image.naturalHeight;
