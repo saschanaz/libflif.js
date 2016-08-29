@@ -1,9 +1,8 @@
 ﻿declare var image: HTMLImageElement;
 declare var message: HTMLDivElement;
-declare var downloader: HTMLInputElement;
+declare var downloader: HTMLAnchorElement;
+declare var downloaderButton: HTMLInputElement;
 declare var encodeResult: ArrayBuffer;
-
-declare function saveAs(data: Blob | File, filename?: string, disableAutoBOM?: boolean): void;
 
 const decoderCanvas = document.createElement("canvas");
 const decoderContext = decoderCanvas.getContext("2d");
@@ -28,8 +27,9 @@ async function encodeSelectedFile(file: File) {
   const raw = await decodeToRaw(file);
   stackMessage(`Decoded ${extUpper} to raw pixels: width=${raw.width} px, height=${raw.height} px, size=${(raw.arrayBuffer.byteLength / 1024).toFixed(2)} KiB`);
   encodeResult = await libflif.encode(raw.arrayBuffer, raw.width, raw.height);
-  downloader.disabled = false;
-  downloader.onclick = () => saveAs(new Blob([encodeResult]), `${file.name}.flif`);
+  downloaderButton.disabled = false;
+  downloader.href = URL.createObjectURL(new Blob([encodeResult]), { oneTimeOnly: true });
+  (downloader as any).download = `${nameSplit.displayName}.flif`; 
   stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
   await libflif.decode(encodeResult, showRaw);
   // var blob;
