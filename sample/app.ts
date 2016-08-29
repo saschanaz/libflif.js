@@ -1,5 +1,7 @@
 ﻿declare var image: HTMLImageElement;
 declare var message: HTMLDivElement;
+declare var downloader: HTMLInputElement;
+declare var encodeResult: ArrayBuffer;
 
 declare function saveAs(data: Blob | File, filename?: string, disableAutoBOM?: boolean): void;
 
@@ -8,7 +10,7 @@ const decoderContext = decoderCanvas.getContext("2d");
 const encoderCanvas = document.createElement("canvas");
 const encoderContext = encoderCanvas.getContext("2d");
 
-async function decodeSelectedFile(file: Blob) {
+async function decodeSelectedFile(file: File) {
   stackMessage("Decoding...");
   try {
     await libflif.decode(file, showRaw);
@@ -18,14 +20,18 @@ async function decodeSelectedFile(file: Blob) {
     stackMessage("Decoding failed.");
   }
 }
-async function encodeSelectedFile(file: Blob) {
-  stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB PNG file...`);
+async function encodeSelectedFile(file: File) {
+  const nameSplit = splitFileName(file.name);
+  const extUpper = nameSplit.extension.toUpperCase();
+
+  stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB ${extUpper} file...`);
   const raw = await decodeToRaw(file);
-  stackMessage(`Decoded PNG to raw pixels: width=${raw.width}, height=${raw.height}, size=${raw.arrayBuffer.byteLength}`);
-  const result = await libflif.encode(raw.arrayBuffer, raw.width, raw.height);
-  saveAs(new Blob([result]), "output.flif");
-  stackMessage(`Successfully encoded as ${(result.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
-  await libflif.decode(result, showRaw);
+  stackMessage(`Decoded ${extUpper} to raw pixels: width=${raw.width} px, height=${raw.height} px, size=${(raw.arrayBuffer.byteLength / 1024).toFixed(2)} KiB`);
+  encodeResult = await libflif.encode(raw.arrayBuffer, raw.width, raw.height);
+  downloader.disabled = false;
+  downloader.onclick = () => saveAs(new Blob([encodeResult]), `${file.name}.flif`);
+  stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
+  await libflif.decode(encodeResult, showRaw);
   // var blob;
 
   // JxrLib.encodeAsBlob(file)
@@ -61,9 +67,11 @@ async function loadSample() {
   const arrayBuffer = await response.arrayBuffer();
   await libflif.decode(arrayBuffer, showRaw);
 }
+
 function show(blob: Blob) {
   image.src = URL.createObjectURL(blob, { oneTimeOnly: true });
 }
+
 async function showRaw(result: libflif.libflifProgressiveDecodingResult) {
   decoderCanvas.width = result.width;
   decoderCanvas.height = result.height;
@@ -73,6 +81,7 @@ async function showRaw(result: libflif.libflifProgressiveDecodingResult) {
   )
   show(await toBlob(decoderCanvas));
 }
+
 function toArrayBuffer(blob: Blob) {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
@@ -80,6 +89,7 @@ function toArrayBuffer(blob: Blob) {
     reader.readAsArrayBuffer(blob);
   });
 }
+
 async function decodeToRaw(blob: Blob) {
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
@@ -95,6 +105,7 @@ async function decodeToRaw(blob: Blob) {
     height: image.naturalHeight
   }
 }
+
 async function toBlob(canvas: HTMLCanvasElement) {
   if (canvas.toBlob) {
     return new Promise<Blob>((resolve, reject) => {
@@ -108,9 +119,16 @@ async function toBlob(canvas: HTMLCanvasElement) {
 function clearMessage() {
   message.textContent = "";
 }
+
+function splitFileName(filename: string) {
+  const splitted = filename.split('.');
+  const extension = splitted.pop();
+  const displayName = splitted.join('.');
+  return { displayName, extension }
+}
+
 function stackMessage(text: string) {
-  if (message.textContent.length > 0) {
-    message.textContent += " ";
-  }
-  message.textContent += text;
+  const p = document.createElement("p");
+  p.textContent = text;
+  message.appendChild(p);
 }

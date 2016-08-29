@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width" />
-  <title>flif.js Testing Page</title>
+  <title>libflif.js Testing Page</title>
   <link rel="stylesheet" href="sample/app.css" type="text/css" />
   <script>
   var libflif = {};
@@ -17,7 +17,9 @@
   <script src="node_modules/file-saver/FileSaver.js"></script>
 </head>
 <body>
-  <h1>flif.js Testing Page</h1>
+  <a href="https://github.com/saschanaz/libflif.js/"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+
+  <h1>libflif.js Testing Page</h1>
 
   <div id="decodeContent">
     <p>
@@ -29,8 +31,11 @@
   </div>
   <div id="encodeContent">
     <p>
-      Load a PNG file to encode: <input type="file" onchange="clearMessage(); encodeSelectedFile(this.files[0])" accept=".png,image/png" /><br />
+      Load any natively supported image file to encode: <input type="file" onchange="clearMessage(); encodeSelectedFile(this.files[0])" accept="image/*" /><br />
     </p>
+  </div>
+  <div>
+    <input type="button" id="downloader" value="Download encoded result" disabled="disabled" /> 
   </div>
   <div id="message"></div>
   <img id="image" />
