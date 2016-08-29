@@ -6,10 +6,12 @@ using namespace emscripten;
 
 #include <flif.h>
 #include <stdexcept>
+#include <vector>
 
 class FLIFImageWrapper {
 private:
     FLIF_IMAGE* image;
+    std::vector<unsigned char*> bufferStorage;
 public:
     FLIFImageWrapper(FLIF_IMAGE* image) {
         this->image = image;
@@ -22,8 +24,16 @@ public:
     static FLIFImageWrapper* createHDR(uint32_t width, uint32_t height) {
         return new FLIFImageWrapper(flif_create_image_HDR(width, height));
     }
+
+    void clearBuffer() {
+        for(unsigned char* p : this->bufferStorage) {
+            delete[] p;
+        }
+        this->bufferStorage.clear();
+    }
     
     ~FLIFImageWrapper() {
+        this->clearBuffer();
         flif_destroy_image(this->image);
     }
 
@@ -57,9 +67,10 @@ public:
 
     val readRowRGBA8(uint32_t row) {
         size_t byteLength = this->width() * 4;
-        unsigned char byteBuffer[byteLength];
+        unsigned char* byteBuffer = new unsigned char[byteLength];
 
         flif_image_read_row_RGBA8(this->image, row, (void*)byteBuffer, byteLength);
+        this->bufferStorage.push_back(byteBuffer);
         return val(typed_memory_view(byteLength, byteBuffer));
     }
 
@@ -69,9 +80,10 @@ public:
 
     val readRowRGBA16(uint32_t row) {
         size_t byteLength = this->width() * 8;
-        unsigned char byteBuffer[byteLength];
+        unsigned char* byteBuffer = new unsigned char[byteLength];
 
         flif_image_read_row_RGBA8(this->image, row, (void*)byteBuffer, byteLength);
+        this->bufferStorage.push_back(byteBuffer);
         return val(typed_memory_view(byteLength, byteBuffer));
     }
 
@@ -154,9 +166,17 @@ public:
 class FLIFEncoderWrapper {
 private:
     FLIF_ENCODER* encoder;
+    std::vector<unsigned char*> bufferStorage;
 public:
     FLIFEncoderWrapper() {
         this->encoder = flif_create_encoder();
+    }
+    
+    void clearBuffer() {
+        for(unsigned char* p : this->bufferStorage) {
+            delete[] p;
+        }
+        this->bufferStorage.clear();
     }
 
     ~FLIFEncoderWrapper() {
@@ -181,6 +201,8 @@ public:
         if (result == 0) {
             throw std::runtime_error("encodeToMemory failed");
         }
+
+        this->bufferStorage.push_back(buffer);
 
         return val(typed_memory_view(buffer_size_bytes, buffer));
     }
