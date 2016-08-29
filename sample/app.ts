@@ -57,7 +57,7 @@ async function encodeSelectedFile(file: Blob) {
 }
 
 async function loadSample() {
-  const response = await fetch("sample/Lenna.flif");
+  const response = await fetch("sample/Lenna.flif?0.2.0rc18");
   const arrayBuffer = await response.arrayBuffer();
   await libflif.decode(arrayBuffer, showRaw);
 }
