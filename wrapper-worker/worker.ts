@@ -55,7 +55,6 @@ self.addEventListener("message", (ev: libflifWrapperMessageEvent) => {
 const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
 
 function decode(uuid: string, input: ArrayBuffer) {
-    libflifem.FS.writeFile("input.flif", new Uint8Array(input), { encoding: "binary" });
     const decoder = new libflifem.FLIFDecoder();
     let bufferView: Uint8Array;
     const callback = libflifem.Runtime.addFunction((quality: number, bytesRead: number) => {
@@ -89,16 +88,20 @@ function decode(uuid: string, input: ArrayBuffer) {
         }
         catch (err) {
             (self as any as Worker).postMessage({
-                debug: err.message
+                error: err.message
             });
         }
         return quality + 1000;
     });
     decoder.setCallback(callback);
+
+    const allocated = libflifem._malloc(input.byteLength);
+    libflifem.HEAP8.set(new Uint8Array(input), allocated);
     try {
-        decoder.decodeFile("input.flif");
+        decoder.decodeMemory(allocated, input.byteLength);
     }
     finally {
+        libflifem._free(allocated);
         decoder.delete();
         libflifem.Runtime.removeFunction(callback);
     }
@@ -158,16 +161,5 @@ namespace EmscriptenUtility {
     export function deleteStringArray(em: EmscriptenModule, input: AllocatedArray) {
         input.content.forEach((item) => em._free(item));
         em._free(input.pointer);
-    }
-}
-
-module EmscriptenUtility.FileSystem {
-    export async function writeBlob(em: EmscriptenModule, path: string, blob: Blob) {
-        const result = await new Promise<ArrayBuffer>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.readAsArrayBuffer(blob);
-        });
-        em.FS.writeFile(path, new Uint8Array(result), { encoding: "binary" });
     }
 }

@@ -2,13 +2,14 @@ import glob = require("glob");
 import fs = require("fs");
 
 const cxx = "em++";
-const exportName = "-s EXPORT_NAME='_libflifem' -s MODULARIZE=1 -s EXTRA_EXPORTED_RUNTIME_METHODS=['FS']";
+const exportName = "-s EXPORT_NAME='_libflifem' -s MODULARIZE=1";
 const ports = "-s USE_LIBPNG=1 -s USE_ZLIB=1";
 const bind = "--bind wrapper/bind.cpp";
 const optimizations = "-D NDEBUG -ftree-vectorize"; // disable -O2 temporarily (emscripten #4519)
 const flags = "-D LODEPNG_NO_COMPILE_PNG -D LODEPNG_NO_COMPILE_DISK";
 const misc = "-s TOTAL_MEMORY=134217728 -s DEMANGLE_SUPPORT=1"
-const libMisc = `${misc} -s RESERVED_FUNCTION_POINTERS=20`;
+const commandMisc = `${misc} -s EXTRA_EXPORTED_RUNTIME_METHODS=['FS']`;
+const libMisc = `${misc} -s RESERVED_FUNCTION_POINTERS=20 -s NO_FILESYSTEM=1`;
 const libOptimizations = "-D NDEBUG"; // disable -O2 temporarily (emscripten #4519)
 
 const libraryInclude = `-I ${appendDir("library/")}`
@@ -65,7 +66,7 @@ const jakeAsyncTaskOptionBag: jake.TaskOptions = {
 
 desc("Build FLIF command-line encoding/decoding tool");
 task("commandline", [], () => {
-    const command = `${cxx} ${flags} -s INVOKE_RUN=0 ${misc} -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
+    const command = `${cxx} ${flags} -s INVOKE_RUN=0 ${commandMisc} -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
     console.log(command);
     jake.exec([command], () => {
         complete();
