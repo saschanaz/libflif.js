@@ -50,6 +50,22 @@ declare interface FLIFEncoder extends EmscriptenClass {
     addImage(image: FLIFImage): void;
     encodeToFile(filename: string): void;
     encodeToMemory(): Uint8Array;
+
+    setInterlaced(interlaced: boolean): void;
+    setLearnRepeat(learnRepeats: number): void;
+    setAutoColorBuckets(acb: boolean): void;
+    setPaletteSize(paletteSize: number): void;
+    setLookback(lookback: number): void;
+    setDivisor(divisor: number): void;
+    setMinSize(minSize: number): void;
+    setThreshold(threshold: number): void;
+    setAlphaZeroLossless(): void;
+    setChanceCutoff(cutoff: number): void;
+    setChanceAlpha(alpha: number): void;
+    setCRCCheck(crcCheck: boolean): void;
+    setChannelCompact(plc: boolean): void;
+    setYCoCg(ycocg: boolean): void;
+    setFrameShape(frs: boolean): void;
 }
 
 declare interface FLIFEncoderConstructor {

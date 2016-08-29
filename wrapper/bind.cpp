@@ -206,6 +206,66 @@ public:
 
         return val(typed_memory_view(buffer_size_bytes, buffer));
     }
+
+    void setInterlaced(bool interlaced) {
+        flif_encoder_set_interlaced(this->encoder, interlaced ? 1 : 0);
+    }
+
+    void setLearnRepeat(uint32_t learnRepeats) {
+        flif_encoder_set_learn_repeat(this->encoder, learnRepeats);
+    }
+
+    void setAutoColorBuckets(bool acb) {
+        flif_encoder_set_auto_color_buckets(this->encoder, acb ? 1 : 0);
+    }
+
+    void setPaletteSize(int32_t paletteSize) {
+        flif_encoder_set_palette_size(this->encoder, paletteSize);
+    }
+
+    void setLookback(int32_t lookback) {
+        flif_encoder_set_lookback(this->encoder, lookback);
+    }
+
+    void setDivisor(int32_t divisor) {
+        flif_encoder_set_divisor(this->encoder, divisor);
+    }
+
+    void setMinSize(int32_t minSize) {
+        flif_encoder_set_min_size(this->encoder, minSize);
+    }
+
+    void setSplitThreshold(int32_t threshold) {
+        flif_encoder_set_split_threshold(this->encoder, threshold);
+    }
+
+    void setAlphaZeroLossless() {
+        flif_encoder_set_alpha_zero_lossless(this->encoder);
+    }
+
+    void setChanceCutoff(int32_t cutoff) {
+        flif_encoder_set_chance_cutoff(this->encoder, cutoff);
+    }
+
+    void setChanceAlpha(int32_t alpha) {
+        flif_encoder_set_chance_alpha(this->encoder, alpha);
+    }
+
+    void setCRCCheck(bool crcCheck) {
+        flif_encoder_set_crc_check(this->encoder, crcCheck ? 1 : 0);
+    }
+
+    void setChannelCompact(bool plc) {
+        flif_encoder_set_channel_compact(this->encoder, plc ? 1 : 0);
+    }
+
+    void setYCoCg(bool ycocg) {
+        flif_encoder_set_ycocg(this->encoder, ycocg ? 1 : 0);
+    }
+
+    void setFrameShape(bool frs) {
+        flif_encoder_set_frame_shape(this->encoder, frs ? 1 : 0);
+    }
 };
 
 EMSCRIPTEN_BINDINGS(libflifem) {
@@ -247,6 +307,21 @@ EMSCRIPTEN_BINDINGS(libflifem) {
         .function("addImage", &FLIFEncoderWrapper::addImage, allow_raw_pointers())
         .function("encodeToFile", &FLIFEncoderWrapper::encodeToFile)
         .function("encodeToMemory", &FLIFEncoderWrapper::encodeToMemory)
+        .function("setInterlaced", &FLIFEncoderWrapper::setInterlaced)
+        .function("setLearnRepeat", &FLIFEncoderWrapper::setLearnRepeat)
+        .function("setAutoColorBuckets", &FLIFEncoderWrapper::setAutoColorBuckets)
+        .function("setPaletteSize", &FLIFEncoderWrapper::setPaletteSize)
+        .function("setLookback", &FLIFEncoderWrapper::setLookback)
+        .function("setDivisor", &FLIFEncoderWrapper::setDivisor)
+        .function("setMinSize", &FLIFEncoderWrapper::setMinSize)
+        .function("setSplitThreshold", &FLIFEncoderWrapper::setSplitThreshold)
+        .function("setAlphaZeroLossless", &FLIFEncoderWrapper::setAlphaZeroLossless)
+        .function("setChanceCutoff", &FLIFEncoderWrapper::setChanceCutoff)
+        .function("setChanceAlpha", &FLIFEncoderWrapper::setChanceAlpha)
+        .function("setCRCCheck", &FLIFEncoderWrapper::setCRCCheck)
+        .function("setChannelCompact", &FLIFEncoderWrapper::setChannelCompact)
+        .function("setYCoCg", &FLIFEncoderWrapper::setYCoCg)
+        .function("setFrameShape", &FLIFEncoderWrapper::setFrameShape)
         ;
 }
 

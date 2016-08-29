@@ -48,7 +48,7 @@ self.addEventListener("message", (ev: libflifWrapperMessageEvent) => {
         }
     }
     catch (err) {
-        (self as any as Worker).postMessage({ error: err.stack || err.message || "Unknown error occurred" });
+        (self as any as Worker).postMessage({ error: err.stack || err.message || "Unspecified error occurred" });
     }
 })
 
