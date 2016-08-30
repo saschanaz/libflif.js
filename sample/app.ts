@@ -23,7 +23,7 @@ async function encodeSelectedFile(fileList: FileList) {
   const nameSplit = splitFileName(fileList[0].name);
   const extUpper = nameSplit.extension.toUpperCase();
 
-  const frames: libflifEncoderInputFrame[] = [];
+  const frames: libflifFrame[] = [];
   for (let file of Array.from(fileList)) {
     stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB ${extUpper} file...`);
     const raw = await decodeToRaw(file);
@@ -81,10 +81,10 @@ function show(blob: Blob) {
 }
 
 async function showRaw(result: libflifProgressiveDecodingResult) {
-  decoderCanvas.width = result.width;
-  decoderCanvas.height = result.height;
+  decoderCanvas.width = result.frames[0].width;
+  decoderCanvas.height = result.frames[0].height;
   decoderContext.putImageData(
-    new ImageData(new Uint8ClampedArray(result.buffer), result.width, result.height),
+    new ImageData(new Uint8ClampedArray(result.frames[0].data), result.frames[0].width, result.frames[0].height),
     0, 0
   )
   show(await toBlob(decoderCanvas));

@@ -1,4 +1,4 @@
-interface libflifEncoderInputFrame {
+interface libflifFrame {
     data: ArrayBuffer;
     width: number;
     height: number;
@@ -6,7 +6,7 @@ interface libflifEncoderInputFrame {
 }
 
 interface libflifEncoderInput {
-    frames: libflifEncoderInputFrame[];
+    frames: libflifFrame[];
     loop?: number;
 
     // TODO: encoder options
@@ -37,7 +37,6 @@ interface libflifWorkerOutputMessageData {
 interface libflifProgressiveDecodingResult {
     quality: number;
     bytesRead: number;
-    width: number;
-    height: number;
-    buffer: ArrayBuffer; // actually SharedArrayBuffer
+    frames: libflifFrame[]; // actually SharedArrayBuffer
+    loop: number;
 }

@@ -46,34 +46,38 @@ const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
 
 function decode(uuid: string, input: ArrayBuffer) {
     const decoder = new libflifem.FLIFDecoder();
-    let bufferView: Uint8Array;
     const callback = libflifem.Runtime.addFunction((quality: number, bytesRead: number) => {
-        const firstFrame = decoder.getImage(0);
-        // if (typeof SharedArrayBuffer === "undefined") {
-        // no SharedArrayBuffer, create new ArrayBuffer every time 
-        bufferView = new Uint8Array(new ArrayBuffer(firstFrame.width * firstFrame.height * 4));
-        // }
-        // else if (!bufferView) {
-        //     // supports SharedArrayBuffer
-        //     bufferView = new Uint8Array(new SharedArrayBuffer(firstFrame.width * firstFrame.height * 4));
-        // }
-        for (let i = 0; i < firstFrame.height; i++) {
-            const row = firstFrame.readRowRGBA8(i);
-            const offset = firstFrame.width * 4 * i;
-            bufferView.set(row, offset);
+        const frames: libflifFrame[] = [];
+        for (let i = 0; i < decoder.numImages; i++) {
+            const frame = decoder.getImage(i); 
+            // TODO: replace ArrayBuffer to SharedArrayBuffer
+            // (currently impossible on Nightly because of structured clone error
+            const bufferView = new Uint8Array(new ArrayBuffer(frame.width * frame.height * 4));
+            for (let i = 0; i < frame.height; i++) {
+                const row = frame.readRowRGBA8(i);
+                const offset = frame.width * 4 * i;
+                bufferView.set(row, offset);
+            }
+            frames.push({
+                data: bufferView.buffer,
+                width: frame.width,
+                height: frame.height,
+                frameDelay: frame.frameDelay,
+            });
+        }
+
+        const progress: libflifProgressiveDecodingResult = {
+            quality,
+            bytesRead,
+            frames,
+            loop: decoder.numLoops
         }
 
         try {
             (self as any as Worker).postMessage({
                 uuid,
-                progress: {
-                    width: firstFrame.width,
-                    height: firstFrame.height,
-                    quality: quality / 10000,
-                    bytesRead,
-                    buffer: bufferView.buffer
-                },
-                debug: `progressive decoding: width=${firstFrame.width} height=${firstFrame.height} quality=${quality}, bytesRead=${bytesRead}`
+                progress,
+                debug: `progressive decoding: width=${frames[0].width} height=${frames[0].height} quality=${quality}, bytesRead=${bytesRead}`
             });
         }
         catch (err) {
