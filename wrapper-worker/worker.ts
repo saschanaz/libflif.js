@@ -95,7 +95,6 @@ function decode(uuid: string, input: ArrayBuffer) {
         decoder.delete();
         libflifem.Runtime.removeFunction(callback);
     }
-    //return libflifem.FS.readFile("output.png").buffer;
 }
 
 function encode(input: libflifEncoderInput) {

@@ -150,6 +150,9 @@ class AnimationDirector {
         if (this._animationFrames.length <= 1) {
             throw new Error(`Expected multiple frames but got ${this._animationFrames.length} frame.`);
         }
+        if (this.duration === 0) {
+            throw new Error("Invalid zero-duration animation file.")
+        }
         if (isNaN(this._animationLoop) || this._animationLoop <= 0) {
             throw new Error(`Invalid non-positive loop value.`)
         }
