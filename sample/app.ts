@@ -13,7 +13,8 @@ let director: AnimationDirector;
 async function decodeSelectedFile(file: File) {
   stackMessage("Decoding...");
   try {
-    await libflif.decode(file, showRaw);
+    const memory: DecodeMemory = {};
+    await libflif.decode(file, result => showRaw(result, memory));
     stackMessage("Successfully decoded.");
   }
   catch (err) {
@@ -40,7 +41,8 @@ async function encodeSelectedFile(fileList: FileList) {
   downloader.href = URL.createObjectURL(new Blob([encodeResult]), { oneTimeOnly: true });
   (downloader as any).download = `${nameSplit.displayName}.flif`;
   stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
-  await libflif.decode(encodeResult, showRaw);
+  const memory: DecodeMemory = {};
+  await libflif.decode(encodeResult, result => showRaw(result, memory));
   // var blob;
 
   // JxrLib.encodeAsBlob(file)
@@ -74,15 +76,19 @@ async function encodeSelectedFile(fileList: FileList) {
 async function loadSample() {
   const response = await fetch("sample/Lenna.flif?0.2.0rc18");
   const arrayBuffer = await response.arrayBuffer();
-  await libflif.decode(arrayBuffer, showRaw);
+  const memory: DecodeMemory = {};
+  await libflif.decode(arrayBuffer, result => showRaw(result, memory));
 }
 
 function show(blob: Blob) {
   image.src = URL.createObjectURL(blob, { oneTimeOnly: true });
 }
 
-async function showRaw(result: libflifProgressiveDecodingResult) {
-  if (director) {
+interface DecodeMemory {
+  director?: AnimationDirector
+}
+async function showRaw(result: libflifProgressiveDecodingResult, memory: DecodeMemory) {
+  if (director && director !== memory.director) {
     director.stop();
   }
   if (result.frames.length === 1) {
@@ -99,11 +105,17 @@ async function showRaw(result: libflifProgressiveDecodingResult) {
       })
     }
 
-    director = new AnimationDirector({
-      frames,
-      loop: result.loop
-    })
-    director.start(frame => show(frame.data));
+    // TODO: replace frames rather than reconstruct
+    if (!memory.director) {
+      director = memory.director = new AnimationDirector({
+        frames,
+        loop: result.loop
+      })
+      director.start(frame => show(frame.data));
+    }
+    else {
+      memory.director.alterFrames(frames);
+    }
   }
 }
 
