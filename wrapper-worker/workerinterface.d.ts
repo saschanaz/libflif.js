@@ -2,12 +2,12 @@ interface libflifEncoderInputFrame {
     data: ArrayBuffer;
     width: number;
     height: number;
-    frameDelay: number;
+    frameDelay?: number;
 }
 
 interface libflifEncoderInput {
     frames: libflifEncoderInputFrame[];
-    loop: number;
+    loop?: number;
 
     // TODO: encoder options
 }

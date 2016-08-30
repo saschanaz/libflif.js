@@ -31,11 +31,9 @@ async function encodeSelectedFile(file: File) {
       {
         data: raw.arrayBuffer,
         width: raw.width,
-        height: raw.height,
-        frameDelay: 0
+        height: raw.height
       }
-    ],
-    loop: 0
+    ]
   });
   downloaderButton.disabled = false;
   downloader.href = URL.createObjectURL(new Blob([encodeResult]), { oneTimeOnly: true });

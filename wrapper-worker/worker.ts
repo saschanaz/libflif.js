@@ -101,7 +101,7 @@ function decode(uuid: string, input: ArrayBuffer) {
 function encode(input: libflifEncoderInput) {
     const encoder = new libflifem.FLIFEncoder();
     const images: FLIFImage[] = [];
-    for (const frame of input.frames) {
+    for (let frame of input.frames) {
         const image = libflifem.FLIFImage.create(frame.width, frame.height);
         const bufferView = new Uint8Array(frame.data);
         for (let i = 0; i < frame.height; i++) {
@@ -124,7 +124,7 @@ function encode(input: libflifEncoderInput) {
         result = encodeView.buffer.slice(encodeView.byteOffset, encodeView.byteOffset + encodeView.byteLength);
     }
     finally {
-        for (const image of images) {
+        for (let image of images) {
             image.delete();
         }
         encoder.delete();
