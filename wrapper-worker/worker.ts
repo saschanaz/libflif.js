@@ -111,7 +111,9 @@ function encode(input: libflifEncoderInput) {
             image.writeRowRGBA8(i, allocated, size);
             libflifem._free(allocated);
         }
-        image.frameDelay = frame.frameDelay;
+        if ("frameDelay" in frame) {
+            image.frameDelay = frame.frameDelay;
+        }
 
         encoder.addImage(image);
         images.push(image);

@@ -19,25 +19,25 @@ async function decodeSelectedFile(file: File) {
     stackMessage("Decoding failed.");
   }
 }
-async function encodeSelectedFile(file: File) {
-  const nameSplit = splitFileName(file.name);
+async function encodeSelectedFile(fileList: FileList) {
+  const nameSplit = splitFileName(fileList[0].name);
   const extUpper = nameSplit.extension.toUpperCase();
 
-  stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB ${extUpper} file...`);
-  const raw = await decodeToRaw(file);
-  stackMessage(`Decoded ${extUpper} to raw pixels: width=${raw.width} px, height=${raw.height} px, size=${(raw.arrayBuffer.byteLength / 1024).toFixed(2)} KiB`);
-  encodeResult = await libflif.encode({
-    frames: [
-      {
-        data: raw.arrayBuffer,
-        width: raw.width,
-        height: raw.height
-      }
-    ]
-  });
+  const frames: libflifEncoderInputFrame[] = [];
+  for (let file of Array.from(fileList)) {
+    stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB ${extUpper} file...`);
+    const raw = await decodeToRaw(file);
+    stackMessage(`Decoded ${extUpper} to raw pixels: width=${raw.width} px, height=${raw.height} px, size=${(raw.arrayBuffer.byteLength / 1024).toFixed(2)} KiB`);
+    frames.push({
+      data: raw.arrayBuffer,
+      width: raw.width,
+      height: raw.height
+    });
+  }
+  encodeResult = await libflif.encode({ frames });
   downloaderButton.disabled = false;
   downloader.href = URL.createObjectURL(new Blob([encodeResult]), { oneTimeOnly: true });
-  (downloader as any).download = `${nameSplit.displayName}.flif`; 
+  (downloader as any).download = `${nameSplit.displayName}.flif`;
   stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
   await libflif.decode(encodeResult, showRaw);
   // var blob;
