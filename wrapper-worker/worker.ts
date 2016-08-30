@@ -6,27 +6,17 @@ declare class SharedArrayBuffer extends ArrayBuffer {
 
 }
 
-interface libflifWrapperMessageData {
-    type: "encode" | "decode";
-    uuid: string;
-    input: ArrayBuffer;
-    imageInfo: ImageInfo;
-}
-interface ImageInfo {
-    width: number;
-    height: number;
-}
-interface libflifWrapperMessageEvent extends MessageEvent {
-    data: libflifWrapperMessageData;
+interface libflifWorkerInputMessageEvent extends MessageEvent {
+    data: libflifWorkerInputMessageData;
 }
 
-self.addEventListener("message", (ev: libflifWrapperMessageEvent) => {
+self.addEventListener("message", (ev: libflifWorkerInputMessageEvent) => {
     (self as any as Worker).postMessage({
-        debug: `received data for ${ev.data.type}, size=${ev.data.input.byteLength}`
+        debug: `received data for ${ev.data.type}`
     });
     try {
         if (ev.data.type === "decode") {
-            decode(ev.data.uuid, ev.data.input);
+            decode(ev.data.uuid, ev.data.input as ArrayBuffer);
 
             // (self as any as Worker).postMessage({
             //     debug: `decode complete, sending data to wrapper.`
@@ -37,7 +27,7 @@ self.addEventListener("message", (ev: libflifWrapperMessageEvent) => {
             // });
         }
         else {
-            const result = encode(ev.data.input, ev.data.imageInfo.width, ev.data.imageInfo.height);
+            const result = encode(ev.data.input as EncoderInput);
             (self as any as Worker).postMessage({
                 debug: `encode complete, sending data to wrapper.`
             });
@@ -60,8 +50,8 @@ function decode(uuid: string, input: ArrayBuffer) {
     const callback = libflifem.Runtime.addFunction((quality: number, bytesRead: number) => {
         const firstFrame = decoder.getImage(0);
         // if (typeof SharedArrayBuffer === "undefined") {
-            // no SharedArrayBuffer, create new ArrayBuffer every time 
-            bufferView = new Uint8Array(new ArrayBuffer(firstFrame.width * firstFrame.height * 4));
+        // no SharedArrayBuffer, create new ArrayBuffer every time 
+        bufferView = new Uint8Array(new ArrayBuffer(firstFrame.width * firstFrame.height * 4));
         // }
         // else if (!bufferView) {
         //     // supports SharedArrayBuffer
@@ -108,19 +98,25 @@ function decode(uuid: string, input: ArrayBuffer) {
     //return libflifem.FS.readFile("output.png").buffer;
 }
 
-function encode(input: ArrayBuffer, width: number, height: number) {
+function encode(input: EncoderInput) {
     const encoder = new libflifem.FLIFEncoder();
-    const image = libflifem.FLIFImage.create(width, height);
-    const bufferView = new Uint8Array(input);
-    for (let i = 0; i < height; i++) {
-        const size = width * 4;
-        const offset = size * i;
-        const allocated = libflifem._malloc(size);
-        libflifem.HEAP8.set(bufferView.slice(offset, offset + size), allocated);
-        image.writeRowRGBA8(i, allocated, size);
-        libflifem._free(allocated);
+    const images: FLIFImage[] = [];
+    for (const frame of input.frames) {
+        const image = libflifem.FLIFImage.create(frame.width, frame.height);
+        const bufferView = new Uint8Array(frame.data);
+        for (let i = 0; i < frame.height; i++) {
+            const size = frame.width * 4;
+            const offset = size * i;
+            const allocated = libflifem._malloc(size);
+            libflifem.HEAP8.set(bufferView.slice(offset, offset + size), allocated);
+            image.writeRowRGBA8(i, allocated, size);
+            libflifem._free(allocated);
+        }
+        image.frameDelay = frame.frameDelay;
+
+        encoder.addImage(image);
+        images.push(image);
     }
-    encoder.addImage(image);
 
     let result: ArrayBuffer;
     try {
@@ -128,7 +124,9 @@ function encode(input: ArrayBuffer, width: number, height: number) {
         result = encodeView.buffer.slice(encodeView.byteOffset, encodeView.byteOffset + encodeView.byteLength);
     }
     finally {
-        image.delete();
+        for (const image of images) {
+            image.delete();
+        }
         encoder.delete();
     }
     return result;

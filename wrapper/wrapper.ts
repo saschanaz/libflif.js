@@ -4,22 +4,8 @@ declare namespace libflif {
 }
 
 namespace libflif {
-    interface libflifWorkerMessageData {
-        uuid: string;
-        error: string;
-        result: ArrayBuffer;
-        debug: string;
-        progress: libflifProgressiveDecodingResult;
-    }
-    export interface libflifProgressiveDecodingResult {
-        quality: number;
-        bytesRead: number;
-        width: number;
-        height: number;
-        buffer: ArrayBuffer; // actually SharedArrayBuffer
-    }
-    interface libflifWorkerMessageEvent extends MessageEvent {
-        data: libflifWorkerMessageData;
+    interface libflifWorkerOutputMessageEvent extends MessageEvent {
+        data: libflifWorkerOutputMessageData;
     }
 
     namespace UUID {
@@ -38,7 +24,7 @@ namespace libflif {
             return;
         }
         worker = new Worker(`${libDir ? libDir + '/' : ""}worker.js`);
-        worker.addEventListener("message", (ev: libflifWorkerMessageEvent) => {
+        worker.addEventListener("message", (ev: libflifWorkerOutputMessageEvent) => {
             if (ev.data.error) {
                 console.error(`worker: ${ev.data.error}`);
             }
@@ -67,7 +53,7 @@ namespace libflif {
 
         return new Promise<ArrayBuffer>((resolve, reject) => {
             const uuid = UUID.generate();
-            const listener = (ev: libflifWorkerMessageEvent) => {
+            const listener = (ev: libflifWorkerOutputMessageEvent) => {
                 if (ev.data.uuid !== uuid) {
                     return;
                 }
@@ -122,7 +108,7 @@ namespace libflif {
 
 
 interface AnimatedFrame {
-    data: Blob[];
+    data: Blob
     width: number;
     height: number;
     frameDelay: number;
@@ -225,13 +211,8 @@ class AnimationDirector {
             sanitized.frameDelay = sanitized.frameDelay || 100;
             sanitized.width = sanitized.width | 0;
             sanitized.height = sanitized.height | 0;
-            if (!Array.isArray(sanitized.data)) {
-                throw new Error("Frame does not contain Blob data array.");
-            }
-            for (let blob of sanitized.data) {
-                if (blob.size === 0) {
-                    throw new Error("Frame contains zero sized blob data.");
-                }
+            if (!(sanitized instanceof Blob) || sanitized.data.size === 0) {
+                throw new Error("Frame does not contain non-zero-sized blob data.");
             }
             if (sanitized.frameDelay <= 0) {
                 throw new Error("Frame delay must be positive value.");

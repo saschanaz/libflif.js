@@ -8,6 +8,7 @@
         "outDir": "../built/"
     },
     "files": [
-        "wrapper.ts"
+        "wrapper.ts",
+        "../wrapper-worker/workerinterface.d.ts"
     ]
 }
