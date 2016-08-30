@@ -27,7 +27,7 @@ self.addEventListener("message", (ev: libflifWorkerInputMessageEvent) => {
             // });
         }
         else {
-            const result = encode(ev.data.input as EncoderInput);
+            const result = encode(ev.data.input as libflifEncoderInput);
             (self as any as Worker).postMessage({
                 debug: `encode complete, sending data to wrapper.`
             });
@@ -98,7 +98,7 @@ function decode(uuid: string, input: ArrayBuffer) {
     //return libflifem.FS.readFile("output.png").buffer;
 }
 
-function encode(input: EncoderInput) {
+function encode(input: libflifEncoderInput) {
     const encoder = new libflifem.FLIFEncoder();
     const images: FLIFImage[] = [];
     for (const frame of input.frames) {

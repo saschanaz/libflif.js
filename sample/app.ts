@@ -26,7 +26,17 @@ async function encodeSelectedFile(file: File) {
   stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB ${extUpper} file...`);
   const raw = await decodeToRaw(file);
   stackMessage(`Decoded ${extUpper} to raw pixels: width=${raw.width} px, height=${raw.height} px, size=${(raw.arrayBuffer.byteLength / 1024).toFixed(2)} KiB`);
-  encodeResult = await libflif.encode(raw.arrayBuffer, raw.width, raw.height);
+  encodeResult = await libflif.encode({
+    frames: [
+      {
+        data: raw.arrayBuffer,
+        width: raw.width,
+        height: raw.height,
+        frameDelay: 0
+      }
+    ],
+    loop: 0
+  });
   downloaderButton.disabled = false;
   downloader.href = URL.createObjectURL(new Blob([encodeResult]), { oneTimeOnly: true });
   (downloader as any).download = `${nameSplit.displayName}.flif`; 
@@ -72,7 +82,7 @@ function show(blob: Blob) {
   image.src = URL.createObjectURL(blob, { oneTimeOnly: true });
 }
 
-async function showRaw(result: libflif.libflifProgressiveDecodingResult) {
+async function showRaw(result: libflifProgressiveDecodingResult) {
   decoderCanvas.width = result.width;
   decoderCanvas.height = result.height;
   decoderContext.putImageData(

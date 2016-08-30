@@ -35,21 +35,20 @@ namespace libflif {
     }
 
     export async function decode(input: ArrayBuffer | Blob, callback: (result: libflifProgressiveDecodingResult) => any) {
-        await sendMessage("decode", input, { callback });
+        const arrayBuffer = input instanceof Blob ? await convertToArrayBuffer(input) : input;
+
+        await sendMessage("decode", arrayBuffer, { callback });
     }
 
-    export function encode(input: ArrayBuffer | Blob, width: number, height: number) {
-        return sendMessage("encode", input, { imageInfo: { width, height } });
+    export function encode(input: libflifEncoderInput) {
+        return sendMessage("encode", input);
     }
 
     interface SendMessageBag {
         callback?: (result: libflifProgressiveDecodingResult) => any;
-        imageInfo?: any;
     }
-    async function sendMessage(type: "decode" | "encode", input: ArrayBuffer | Blob, bag: SendMessageBag) {
+    async function sendMessage(type: "decode" | "encode", input: ArrayBuffer | libflifEncoderInput, bag?: SendMessageBag) {
         startWorker();
-
-        const arrayBuffer = input instanceof Blob ? await convertToArrayBuffer(input) : input;
 
         return new Promise<ArrayBuffer>((resolve, reject) => {
             const uuid = UUID.generate();
@@ -78,12 +77,7 @@ namespace libflif {
             worker.addEventListener("message", listener);
 
             debugLog(`sending data for ${type} to worker.`);
-            if (bag.imageInfo) {
-                worker.postMessage({ type, uuid, input: arrayBuffer, imageInfo: bag.imageInfo })
-            }
-            else {
-                worker.postMessage({ type, uuid, input: arrayBuffer })
-            }
+            worker.postMessage({ type, uuid, input });
         })
     }
 
