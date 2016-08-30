@@ -135,6 +135,7 @@ interface Animation {
 class AnimationDirector {
     private _animationFrames: AnimatedFrame[];
     private _animationLoop: number;
+    private _currentLoop: number;
     private _nextFrameTime = 0;
     private _currentFrameIndex = -1;
     private _working = false;
@@ -164,7 +165,7 @@ class AnimationDirector {
             throw new Error("Invalid non-array frame array.")
         }
         this._animationFrames = this._cloneSanitizedFrames(animation.frames);
-        this._animationLoop = animation.loop || 0;
+        this._animationLoop = (animation.loop | 0) || 0;
 
         if (this._animationFrames.length <= 1) {
             throw new Error(`Expected multiple frames but got ${this._animationFrames.length} frame.`);
@@ -184,6 +185,17 @@ class AnimationDirector {
         while (this._working) {
             if (this._nextFrameTime <= time) {
                 this._currentFrameIndex++;
+                if (this._currentFrameIndex >= this._animationFrames.length) {
+                    this._currentFrameIndex = 0;
+                    this._currentLoop++;
+
+                    if (this._animationLoop !== 0 && /* allow infinite loop when loop value is zero */
+                        this._currentLoop >= this._animationLoop) {
+
+                        this._working = false;
+                        break;
+                    }
+                }
                 const currentFrame = this._animationFrames[this._currentFrameIndex];
                 this._nextFrameTime += currentFrame.frameDelay;
                 try {
