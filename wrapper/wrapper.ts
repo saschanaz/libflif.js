@@ -187,23 +187,25 @@ class AnimationDirector {
             // loop check
             if (this._currentFrameIndex >= this._animationFrames.length) {
                 this._currentFrameIndex = 0;
-                this._currentLoop++;
 
-                if (this._animationLoop !== 0 && /* allow infinite loop when loop value is zero */
-                    this._currentLoop >= this._animationLoop) {
+                if (this._animationLoop !== 0) { // limited loop when non-zero
+                    this._currentLoop++;
 
-                    // render last frame and terminate
-                    this._currentFrameIndex = this._animationFrames.length - 1;
-                    this._safeAnimate(this._animationFrames[this._currentFrameIndex], animate);
-                    this._working = false;
-                    break;
+                    if (this._currentLoop >= this._animationLoop) {
+
+                        // render last frame and terminate
+                        this._currentFrameIndex = this._animationFrames.length - 1;
+                        this._safeAnimate(this._animationFrames[this._currentFrameIndex], animate);
+                        this._working = false;
+                        break;
+                    }
                 }
             }
 
             const currentFrame = this._animationFrames[this._currentFrameIndex];
             lastFramePlannedRenderTime += lastFrameDelay;
             lastFrameDelay = currentFrame.frameDelay;
-            
+
             if (now < lastFramePlannedRenderTime + lastFrameDelay) {
                 this._safeAnimate(currentFrame, animate);
                 now = await new Promise<number>(resolve => requestAnimationFrame(time => resolve(time)));
