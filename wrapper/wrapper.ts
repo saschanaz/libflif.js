@@ -115,9 +115,10 @@ interface Animation {
 class AnimationDirector {
     private _animationFrames: AnimatedFrame[];
     private _animationLoop: number;
+
     private _currentLoop: number;
-    private _nextFrameTime = 0;
     private _currentFrameIndex = -1;
+
     private _working = false;
 
     get frames() {
@@ -164,32 +165,58 @@ class AnimationDirector {
         }
         this._working = true;
 
-        let time = performance.now();
+        let now = performance.now();
+        let lastFramePlannedRenderTime = now;
+        let lastFrameDelay = 0;
+
         while (this._working) {
-            if (this._nextFrameTime <= time) {
-                this._currentFrameIndex++;
-                if (this._currentFrameIndex >= this._animationFrames.length) {
-                    this._currentFrameIndex = 0;
-                    this._currentLoop++;
+            /*
+            TODO: play a frame
+            on next requestanimationframe, check current frame delay has finished
+            if finished, shifttime get next frame and check frame delay has finished
+            if finished, ...
+            if not, play that frame 
 
-                    if (this._animationLoop !== 0 && /* allow infinite loop when loop value is zero */
-                        this._currentLoop >= this._animationLoop) {
+            while-loop should play a frame before any looping
+            */
+            if (now < lastFramePlannedRenderTime + lastFrameDelay) {
+                continue; // should be kept more
+            }
 
-                        this._working = false;
-                        break;
-                    }
-                }
-                const currentFrame = this._animationFrames[this._currentFrameIndex];
-                this._nextFrameTime += currentFrame.frameDelay;
-                try {
-                    animate(currentFrame);
-                }
-                catch (err) {
-                    console.error(err);
+            this._currentFrameIndex++;
+            // loop check
+            if (this._currentFrameIndex >= this._animationFrames.length) {
+                this._currentFrameIndex = 0;
+                this._currentLoop++;
+
+                if (this._animationLoop !== 0 && /* allow infinite loop when loop value is zero */
+                    this._currentLoop >= this._animationLoop) {
+
+                    // render last frame and terminate
+                    this._currentFrameIndex = this._animationFrames.length - 1;
+                    this._safeAnimate(this._animationFrames[this._currentFrameIndex], animate);
+                    this._working = false;
+                    break;
                 }
             }
 
-            time = await new Promise<number>(resolve => requestAnimationFrame(time => resolve(time)));
+            const currentFrame = this._animationFrames[this._currentFrameIndex];
+            lastFramePlannedRenderTime += lastFrameDelay;
+            lastFrameDelay = currentFrame.frameDelay;
+            
+            if (now < lastFramePlannedRenderTime + lastFrameDelay) {
+                this._safeAnimate(currentFrame, animate);
+                now = await new Promise<number>(resolve => requestAnimationFrame(time => resolve(time)));
+            }
+        }
+    }
+
+    private _safeAnimate(frame: AnimatedFrame, animate: (frame: AnimatedFrame) => any) {
+        try {
+            animate(frame);
+        }
+        catch (err) {
+            console.error(err);
         }
     }
 
