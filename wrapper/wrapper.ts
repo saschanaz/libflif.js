@@ -142,7 +142,7 @@ class AnimationDirector {
     }
 
     constructor(animation: Animation) {
-        if (!Array.isArray(this._animationFrames)) {
+        if (!Array.isArray(animation.frames)) {
             throw new Error("Invalid non-array frame array.")
         }
         this._animationFrames = this._cloneSanitizedFrames(animation.frames);
@@ -154,14 +154,21 @@ class AnimationDirector {
         if (this.duration === 0) {
             throw new Error("Invalid zero-duration animation file.")
         }
-        if (isNaN(this._animationLoop) || this._animationLoop <= 0) {
-            throw new Error(`Invalid non-positive loop value.`)
+        if (isNaN(this._animationLoop) || this._animationLoop < 0) {
+            throw new Error(`Invalid non-numeric or negative loop value.`)
         }
+    }
+
+    alterFrames(frames: AnimatedFrame[]) {
+        this._animationFrames = this._cloneSanitizedFrames(frames);
     }
 
     async start(animate: (frame: AnimatedFrame) => any) {
         if (this._working) {
             return;
+        }
+        if (!(animate instanceof Function)) {
+            throw new Error("Invalid non-function callback");
         }
         this._working = true;
 
@@ -180,6 +187,7 @@ class AnimationDirector {
             while-loop should play a frame before any looping
             */
             if (now < lastFramePlannedRenderTime + lastFrameDelay) {
+                now = await new Promise<number>(resolve => requestAnimationFrame(time => resolve(time)));
                 continue; // should be kept more
             }
 
@@ -233,11 +241,12 @@ class AnimationDirector {
         const result: AnimatedFrame[] = [];
 
         for (let frame of animatedFrames) { // cannot use const because of Firefox
-            const sanitized = Object.freeze(Object.assign({}, frame));
+            const sanitized = Object.assign({}, frame);
             sanitized.frameDelay = sanitized.frameDelay || 100;
             sanitized.width = sanitized.width | 0;
             sanitized.height = sanitized.height | 0;
-            if (!(sanitized instanceof Blob) || sanitized.data.size === 0) {
+            Object.freeze(sanitized);
+            if (!(sanitized.data instanceof Blob) || sanitized.data.size === 0) {
                 throw new Error("Frame does not contain non-zero-sized blob data.");
             }
             if (sanitized.frameDelay <= 0) {
@@ -249,6 +258,7 @@ class AnimationDirector {
             if (sanitized.height <= 0) {
                 throw new Error("Frame height must be positive value.");
             }
+            result.push(sanitized);
         }
 
         return result;

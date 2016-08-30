@@ -8,6 +8,7 @@ const decoderCanvas = document.createElement("canvas");
 const decoderContext = decoderCanvas.getContext("2d");
 const encoderCanvas = document.createElement("canvas");
 const encoderContext = encoderCanvas.getContext("2d");
+let director: AnimationDirector;
 
 async function decodeSelectedFile(file: File) {
   stackMessage("Decoding...");
@@ -81,13 +82,39 @@ function show(blob: Blob) {
 }
 
 async function showRaw(result: libflifProgressiveDecodingResult) {
-  decoderCanvas.width = result.frames[0].width;
-  decoderCanvas.height = result.frames[0].height;
+  if (director) {
+    director.stop();
+  }
+  if (result.frames.length === 1) {
+    show(await toRawBlob(result.frames[0].data, result.frames[0].width, result.frames[0].height));
+  }
+  else {
+    const frames: AnimatedFrame[] = [];
+    for (let frame of result.frames) {
+      frames.push({
+        data: await toRawBlob(frame.data, frame.width, frame.height),
+        width: frame.width,
+        height: frame.height,
+        frameDelay: frame.frameDelay
+      })
+    }
+
+    director = new AnimationDirector({
+      frames,
+      loop: result.loop
+    })
+    director.start(frame => show(frame.data));
+  }
+}
+
+async function toRawBlob(buffer: ArrayBuffer, width: number, height: number) {
+  decoderCanvas.width = width;
+  decoderCanvas.height = height;
   decoderContext.putImageData(
-    new ImageData(new Uint8ClampedArray(result.frames[0].data), result.frames[0].width, result.frames[0].height),
+    new ImageData(new Uint8ClampedArray(buffer), width, height),
     0, 0
   )
-  show(await toBlob(decoderCanvas));
+  return await toBlob(decoderCanvas);
 }
 
 function toArrayBuffer(blob: Blob) {
