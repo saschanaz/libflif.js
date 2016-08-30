@@ -59,14 +59,14 @@ function decode(uuid: string, input: ArrayBuffer) {
     let bufferView: Uint8Array;
     const callback = libflifem.Runtime.addFunction((quality: number, bytesRead: number) => {
         const firstFrame = decoder.getImage(0);
-        if (typeof SharedArrayBuffer === "undefined") {
+        // if (typeof SharedArrayBuffer === "undefined") {
             // no SharedArrayBuffer, create new ArrayBuffer every time 
             bufferView = new Uint8Array(new ArrayBuffer(firstFrame.width * firstFrame.height * 4));
-        }
-        else if (!bufferView) {
-            // supports SharedArrayBuffer
-            bufferView = new Uint8Array(new SharedArrayBuffer(firstFrame.width * firstFrame.height * 4));
-        }
+        // }
+        // else if (!bufferView) {
+        //     // supports SharedArrayBuffer
+        //     bufferView = new Uint8Array(new SharedArrayBuffer(firstFrame.width * firstFrame.height * 4));
+        // }
         for (let i = 0; i < firstFrame.height; i++) {
             const row = firstFrame.readRowRGBA8(i);
             const offset = firstFrame.width * 4 * i;
