@@ -3,7 +3,6 @@ built/
 Jakefile-main.js
 wrapper/*.js
 wrapper/*.d.ts
-*.js.mem
 
 # VSCode DB files
 *.VC.DB
