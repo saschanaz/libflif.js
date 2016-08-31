@@ -2,7 +2,11 @@
 declare var message: HTMLDivElement;
 declare var downloader: HTMLAnchorElement;
 declare var downloaderButton: HTMLInputElement;
-declare var encodeResult: ArrayBuffer;
+declare var decodeButton: HTMLInputElement;
+declare var encodeButton: HTMLInputElement;
+declare var sampleButton: HTMLInputElement;
+
+var encodeResult: ArrayBuffer;
 
 const decoderCanvas = document.createElement("canvas");
 const decoderContext = decoderCanvas.getContext("2d");
@@ -11,6 +15,44 @@ const encoderContext = encoderCanvas.getContext("2d");
 let director: AnimationDirector;
 
 libflif.startWorker();
+
+document.addEventListener("DOMContentLoaded", () => {
+  decodeButton.addEventListener("change", async () => {
+    if (decodeButton.files.length === 0) {
+      return;
+    }
+    clearMessage();
+    lockButtons();
+    try {
+      await decodeSelectedFile(decodeButton.files[0])
+    }
+    finally {
+      unlockButtons();
+    }
+  });
+  encodeButton.addEventListener("change", async () => {
+    if (encodeButton.files.length === 0) {
+      return;
+    }
+    clearMessage();
+    lockButtons();
+    try {
+      await encodeSelectedFile(encodeButton.files)
+    }
+    finally {
+      unlockButtons();
+    }
+  });
+  sampleButton.addEventListener("click", async () => {
+    lockButtons();
+    try {
+      await loadSample();
+    }
+    finally {
+      unlockButtons();
+    }
+  })
+})
 
 async function decodeSelectedFile(file: File) {
   stackMessage("Decoding...");
@@ -180,4 +222,12 @@ function stackMessage(text: string) {
   const p = document.createElement("p");
   p.textContent = text;
   message.appendChild(p);
+}
+
+function lockButtons() {
+  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = true;
+}
+
+function unlockButtons() {
+  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = false;
 }

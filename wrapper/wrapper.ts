@@ -68,7 +68,7 @@ namespace libflif {
                 }
                 else {
                     bag.callback(ev.data.progress);
-                    if (ev.data.progress.quality === 1) {
+                    if (ev.data.progress.quality === 10000) {
                         worker.removeEventListener("message", listener);
                         resolve();
                     }

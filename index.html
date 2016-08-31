@@ -22,15 +22,15 @@
 
   <div id="decodeContent">
     <p>
-      Load a FLIF file to decode: <input type="file" onchange="clearMessage(); decodeSelectedFile(this.files[0])" accept=".flif,image/x-flif" /><br />
+      Load a FLIF file to decode: <input type="file" id="decodeButton" accept=".flif,image/x-flif" /><br />
     </p>
     <p>
-      <input type="button" onclick="loadSample()" value="Load Lenna.flif" /><br />
+      <input type="button" id="sampleButton" value="Load Lenna.flif" /><br />
     </p>
   </div>
   <div id="encodeContent">
     <p>
-      Load any natively supported image file to encode: <input type="file" onchange="clearMessage(); encodeSelectedFile(this.files)" accept="image/*" multiple="multiple" /><br />
+      Load any natively supported image file to encode: <input type="file" id="encodeButton" accept="image/*" multiple="multiple" /><br />
       (Select multiple files to make them animated)
     </p>
   </div>
