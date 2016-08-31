@@ -56,8 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function decodeSelectedFile(file: File) {
   stackMessage("Decoding...");
+  const memory: DecodeMemory = {};
   try {
-    const memory: DecodeMemory = {};
     await libflif.decode(file, result => showRaw(result, memory));
     stackMessage("Successfully decoded.");
   }
@@ -86,7 +86,13 @@ async function encodeSelectedFile(fileList: FileList) {
   (downloader as any).download = `${nameSplit.displayName}.flif`;
   stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
   const memory: DecodeMemory = {};
-  await libflif.decode(encodeResult, result => showRaw(result, memory));
+  try {
+    await libflif.decode(encodeResult, result => showRaw(result, memory));
+    stackMessage("Successfully decoded.");
+  }
+  catch (err) {
+    stackMessage("Decoding failed.");
+  }
   // var blob;
 
   // JxrLib.encodeAsBlob(file)

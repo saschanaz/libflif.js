@@ -10,7 +10,7 @@ const flags = "-D LODEPNG_NO_COMPILE_PNG -D LODEPNG_NO_COMPILE_DISK";
 const misc = "-s TOTAL_MEMORY=134217728 -s DEMANGLE_SUPPORT=1"
 const commandMisc = `${misc} -s EXTRA_EXPORTED_RUNTIME_METHODS=['FS']`;
 const libMisc = `${misc} -s RESERVED_FUNCTION_POINTERS=20 -s NO_FILESYSTEM=1`;
-const libOptimizations = "-D NDEBUG -O2"; // disable -O2 temporarily (emscripten #4519)
+const libOptimizations = "-D NDEBUG -Oz --llvm-lto 1 -s USE_SDL=0 -s ELIMINATE_DUPLICATE_FUNCTIONS=1"; // disable -O2 temporarily (emscripten #4519)
 
 const libraryInclude = `-I ${appendDir("library/")}`
 
@@ -50,6 +50,18 @@ const filesCpp = [
     "io.cpp",
     // "../extern/lodepng.cpp"
 ].map(item => appendDir(item)).join(' ');
+const libFilesCpp = [
+    "maniac/chance.cpp",
+    "maniac/symbol.cpp",
+    "image/crc32k.cpp",
+    "image/image.cpp",
+    "image/color_range.cpp",
+    "transform/factory.cpp",
+    "common.cpp",
+    "flif-enc.cpp",
+    "flif-dec.cpp",
+    "io.cpp",
+].map(item => appendDir(item)).join(' ');
 
 function appendDir(path: string) {
     return `submodules/flif/src/${path}`;
@@ -75,7 +87,7 @@ task("commandline", [], () => {
 
 desc("Build libflif");
 task("libflif", [], () => {
-    const command = `${cxx} ${flags} ${libMisc} -std=c++11 ${bind} ${exportName} ${ports} ${libOptimizations} -g0 -Wall ${libraryInclude} ${filesCpp} ${appendDir("library/flif-interface.cpp")} -o built/libflif.js`;
+    const command = `${cxx} ${flags} ${libMisc} -std=c++11 ${bind} ${exportName} ${ports} ${libOptimizations} -g0 -Wall ${libraryInclude} ${libFilesCpp} ${appendDir("library/flif-interface.cpp")} -o built/libflif.js`;
     console.log(command);
     jake.exec([command], () => {
         complete();
