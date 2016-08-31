@@ -38,7 +38,7 @@ self.addEventListener("message", (ev: libflifWorkerInputMessageEvent) => {
         }
     }
     catch (err) {
-        (self as any as Worker).postMessage({ error: err.stack || err.message || "Unspecified error occurred" });
+        (self as any as Worker).postMessage({ uuid: ev.data.uuid, error: err.stack || err.message || "Unspecified error occurred" });
     }
 })
 
@@ -73,20 +73,13 @@ function decode(uuid: string, input: ArrayBuffer) {
             bytesRead,
             frames,
             loop: decoder.numLoops
-        }
+        };
 
-        try {
-            (self as any as Worker).postMessage({
-                uuid,
-                progress,
-                debug: `progressive decoding: width=${frames[0].width} height=${frames[0].height} quality=${quality}, bytesRead=${bytesRead}`
-            });
-        }
-        catch (err) {
-            (self as any as Worker).postMessage({
-                error: err.message
-            });
-        }
+        (self as any as Worker).postMessage({
+            uuid,
+            progress,
+            debug: `progressive decoding: width=${frames[0].width} height=${frames[0].height} quality=${quality}, bytesRead=${bytesRead}`
+        });
         return quality + 1000;
     });
     decoder.setCallback(callback);
