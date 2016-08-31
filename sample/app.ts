@@ -119,9 +119,11 @@ async function encodedSelectedAnimation(file: File) {
   const nameSplit = splitFileName(file.name);
   const extUpper = nameSplit.extension.toUpperCase();
   let exportResult: APNGExporter.IndependentExportResult;
+
+  stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB APNG file...`);
   try {
     exportResult = await APNGExporter.get(file);
-    stackMessage(`Decoded: width=${exportResult.width} px, height=${exportResult.height} px, loop count=${exportResult.loopCount}, duration=${exportResult.duration}`);
+    stackMessage(`Decoded to independent frames: width=${exportResult.width} px, height=${exportResult.height} px, loop count=${exportResult.loopCount}, duration=${exportResult.duration}`);
   }
   catch (err) {
     stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
