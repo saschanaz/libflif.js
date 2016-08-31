@@ -4,9 +4,8 @@ declare var downloader: HTMLAnchorElement;
 declare var downloaderButton: HTMLInputElement;
 declare var decodeButton: HTMLInputElement;
 declare var encodeButton: HTMLInputElement;
+declare var encodeAnimationButton: HTMLInputElement;
 declare var sampleButton: HTMLInputElement;
-
-var encodeResult: ArrayBuffer;
 
 const decoderCanvas = document.createElement("canvas");
 const decoderContext = decoderCanvas.getContext("2d");
@@ -43,6 +42,19 @@ document.addEventListener("DOMContentLoaded", () => {
       unlockButtons();
     }
   });
+  encodeAnimationButton.addEventListener("change", async () => {
+    if (encodeAnimationButton.files.length === 0) {
+      return;
+    }
+    clearMessage();
+    lockButtons();
+    try {
+      await encodedSelectedAnimation(encodeAnimationButton.files[0]);
+    }
+    finally {
+      unlockButtons();
+    }
+  });
   sampleButton.addEventListener("click", async () => {
     lockButtons();
     try {
@@ -65,6 +77,7 @@ async function decodeSelectedFile(file: File) {
     stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
   }
 }
+
 async function encodeSelectedFile(fileList: FileList) {
   const nameSplit = splitFileName(fileList[0].name);
   const extUpper = nameSplit.extension.toUpperCase();
@@ -80,6 +93,8 @@ async function encodeSelectedFile(fileList: FileList) {
       height: raw.height
     });
   }
+
+  let encodeResult: ArrayBuffer;
   try {
     encodeResult = await libflif.encode({ frames });
     stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
@@ -98,34 +113,50 @@ async function encodeSelectedFile(fileList: FileList) {
   catch (err) {
     stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
   }
-  // var blob;
+}
 
-  // JxrLib.encodeAsBlob(file)
-  //   .catch(function () {
-  //     stackMessage("JxrLib cannot open this file. Fallbacking to the browser native... Try BMP file if this fails.");
-  //     return tryDrawing(file)
-  //       .then(function (url) {
-  //         if (url)
-  //           return download(url).then(function (array) { return JxrLib.encodeAsBlob(array, { inputType: "bmp" }); });
-  //         else
-  //           throw new Error();
-  //       });
-  //   })
-  //   .then(function (_blob) {
-  //     blob = _blob;
-  //     return JxrLib.isNativelySupported();
-  //   })
-  //   .then(function (isNative) {
-  //     if (isNative) {
-  //       stackMessage("Successfully encoded.");
-  //       return show(blob);
-  //     }
-  //     else {
-  //       stackMessage("Successfully encoded and now decoding again by JxrLib....");
-  //       return decodeSelectedFile(blob);
-  //     }
-  //   })
-  //   .catch(function () { stackMessage("Encoding failed."); });
+async function encodedSelectedAnimation(file: File) {
+  const nameSplit = splitFileName(file.name);
+  const extUpper = nameSplit.extension.toUpperCase();
+  let exportResult: APNGExporter.IndependentExportResult;
+  try {
+    exportResult = await APNGExporter.get(file);
+    stackMessage(`Decoded: width=${exportResult.width} px, height=${exportResult.height} px, loop count=${exportResult.loopCount}, duration=${exportResult.duration}`);
+  }
+  catch (err) {
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+  }
+
+  const frames: libflifFrame[] = [];
+  for (let frame of exportResult.frames) {
+    frames.push({
+      data: (await decodeToRaw(frame.blob)).arrayBuffer,
+      frameDelay: frame.delay,
+      width: exportResult.width,
+      height: exportResult.height
+    });
+  }
+
+  let encodeResult: ArrayBuffer;
+  try {
+    encodeResult = await libflif.encode({ frames, loop: exportResult.loopCount });
+    stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
+  }
+  catch (err) {
+    stackMessage(`Encoding failed: ${err.message || "Unspecified error"}`);
+  }
+
+  downloaderButton.disabled = false;
+  downloader.href = URL.createObjectURL(new Blob([encodeResult]), { oneTimeOnly: true });
+  (downloader as any).download = `${nameSplit.displayName}.flif`;
+  const memory: DecodeMemory = {};
+  try {
+    await libflif.decode(encodeResult, result => showRaw(result, memory));
+    stackMessage("Successfully decoded.");
+  }
+  catch (err) {
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+  }
 }
 
 async function loadSample() {
@@ -195,6 +226,7 @@ async function toRawBlob(buffer: ArrayBuffer, width: number, height: number) {
 function toArrayBuffer(blob: Blob) {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
+    reader.onerror = err => reject(err);
     reader.onload = () => resolve(reader.result);
     reader.readAsArrayBuffer(blob);
   });

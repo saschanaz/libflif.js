@@ -11,6 +11,7 @@
         "../node_modules/@types/whatwg-fetch/index.d.ts",
 		//"../node_modules/@types/whatwg-streams/index.d.ts",
         "../wrapper-worker/workerinterface.d.ts",
-        "../built/wrapper.d.ts"
+        "../built/wrapper.d.ts",
+        "../submodules/apng-exporter/lib/apng-exporter.d.ts"
     ]
 }
