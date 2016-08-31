@@ -57,6 +57,7 @@ function decode(uuid: string, input: ArrayBuffer) {
                 const row = frame.readRowRGBA8(i);
                 const offset = frame.width * 4 * i;
                 bufferView.set(row, offset);
+                frame.clearBuffer(); // remove C++ internal buffer created by readRow
             }
             frames.push({
                 data: bufferView.buffer,
@@ -64,6 +65,7 @@ function decode(uuid: string, input: ArrayBuffer) {
                 height: frame.height,
                 frameDelay: frame.frameDelay,
             });
+            frame.delete(); // will not affect decoder internal image instance 
         }
 
         const progress: libflifProgressiveDecodingResult = {

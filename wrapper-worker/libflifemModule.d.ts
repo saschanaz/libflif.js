@@ -15,6 +15,8 @@ declare interface FLIFImage extends EmscriptenClass {
     readRowRGBA8(row: number): Uint8Array;
     writeRowRGBA16(row: number, bufferPointer: number, bufferByteLength: number): void;
     readRowRGBA16(row: number): void;
+
+    clearBuffer(): void;
 }
 
 declare interface FLIFImageConstructor {
@@ -66,6 +68,8 @@ declare interface FLIFEncoder extends EmscriptenClass {
     setChannelCompact(plc: boolean): void;
     setYCoCg(ycocg: boolean): void;
     setFrameShape(frs: boolean): void;
+
+    clearBuffer(): void;
 }
 
 declare interface FLIFEncoderConstructor {

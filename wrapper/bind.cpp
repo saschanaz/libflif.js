@@ -12,9 +12,11 @@ class FLIFImageWrapper {
 private:
     FLIF_IMAGE* image;
     std::vector<unsigned char*> bufferStorage;
+    bool constructed = true;
 public:
     FLIFImageWrapper(FLIF_IMAGE* image) {
         this->image = image;
+        constructed = false;
     }
     
     static FLIFImageWrapper* create(uint32_t width, uint32_t height) {
@@ -34,7 +36,9 @@ public:
     
     ~FLIFImageWrapper() {
         this->clearBuffer();
-        flif_destroy_image(this->image);
+        if (this->constructed) {
+            flif_destroy_image(this->image);
+        }
     }
 
     uint32_t width() const {
@@ -274,6 +278,7 @@ EMSCRIPTEN_BINDINGS(libflifem) {
     class_<FLIFImageWrapper>("FLIFImage")
         .class_function("create", &FLIFImageWrapper::create, allow_raw_pointers())
         .class_function("createHDR", &FLIFImageWrapper::createHDR, allow_raw_pointers())
+        .function("clearBuffer", &FLIFImageWrapper::clearBuffer)
         .property("width", &FLIFImageWrapper::width)
         .property("height", &FLIFImageWrapper::height)
         .property("nbChannels", &FLIFImageWrapper::nbChannels)
@@ -304,6 +309,7 @@ EMSCRIPTEN_BINDINGS(libflifem) {
     
     class_<FLIFEncoderWrapper>("FLIFEncoder")
         .constructor()
+        .function("clearBuffer", &FLIFEncoderWrapper::clearBuffer)
         .function("addImage", &FLIFEncoderWrapper::addImage, allow_raw_pointers())
         .function("encodeToFile", &FLIFEncoderWrapper::encodeToFile)
         .function("encodeToMemory", &FLIFEncoderWrapper::encodeToMemory)
