@@ -5,12 +5,12 @@ const cxx = "em++";
 const exportName = "-s EXPORT_NAME='_libflifem' -s MODULARIZE=1";
 const ports = "-s USE_LIBPNG=1 -s USE_ZLIB=1";
 const bind = "--bind wrapper/bind.cpp";
-const optimizations = "-D NDEBUG -ftree-vectorize"; // disable -O2 temporarily (emscripten #4519)
+const optimizations = "-D NDEBUG -O2 -ftree-vectorize"; // disable -O2 temporarily (emscripten #4519)
 const flags = "-D LODEPNG_NO_COMPILE_PNG -D LODEPNG_NO_COMPILE_DISK";
 const misc = "-s TOTAL_MEMORY=134217728 -s DEMANGLE_SUPPORT=1"
 const commandMisc = `${misc} -s EXTRA_EXPORTED_RUNTIME_METHODS=['FS']`;
 const libMisc = `${misc} -s RESERVED_FUNCTION_POINTERS=20 -s NO_FILESYSTEM=1`;
-const libOptimizations = "-D NDEBUG"; // disable -O2 temporarily (emscripten #4519)
+const libOptimizations = "-D NDEBUG -O2"; // disable -O2 temporarily (emscripten #4519)
 
 const libraryInclude = `-I ${appendDir("library/")}`
 

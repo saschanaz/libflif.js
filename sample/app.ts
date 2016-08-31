@@ -10,6 +10,8 @@ const encoderCanvas = document.createElement("canvas");
 const encoderContext = encoderCanvas.getContext("2d");
 let director: AnimationDirector;
 
+libflif.startWorker();
+
 async function decodeSelectedFile(file: File) {
   stackMessage("Decoding...");
   try {

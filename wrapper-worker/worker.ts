@@ -42,7 +42,7 @@ self.addEventListener("message", (ev: libflifWorkerInputMessageEvent) => {
     }
 })
 
-const libflifem = _libflifem({ memoryInitializerPrefixURL: "built/" });
+const libflifem = _libflifem();
 
 function decode(uuid: string, input: ArrayBuffer) {
     const decoder = new libflifem.FLIFDecoder();

@@ -77,4 +77,4 @@ declare interface FLIFEncoderConstructor {
     prototype: FLIFEncoder;
 }
 
-declare function _libflifem(options: any): EmscriptenModule & libflifemModule;
+declare function _libflifem(options?: any): EmscriptenModule & libflifemModule;
