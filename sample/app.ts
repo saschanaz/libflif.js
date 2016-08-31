@@ -62,7 +62,7 @@ async function decodeSelectedFile(file: File) {
     stackMessage("Successfully decoded.");
   }
   catch (err) {
-    stackMessage("Decoding failed.");
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
   }
 }
 async function encodeSelectedFile(fileList: FileList) {
@@ -80,18 +80,23 @@ async function encodeSelectedFile(fileList: FileList) {
       height: raw.height
     });
   }
-  encodeResult = await libflif.encode({ frames });
+  try {
+    encodeResult = await libflif.encode({ frames });
+    stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
+  }
+  catch (err) {
+    stackMessage(`Encoding failed: ${err.message || "Unspecified error"}`);
+  }
   downloaderButton.disabled = false;
   downloader.href = URL.createObjectURL(new Blob([encodeResult]), { oneTimeOnly: true });
   (downloader as any).download = `${nameSplit.displayName}.flif`;
-  stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
   const memory: DecodeMemory = {};
   try {
     await libflif.decode(encodeResult, result => showRaw(result, memory));
     stackMessage("Successfully decoded.");
   }
   catch (err) {
-    stackMessage("Decoding failed.");
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
   }
   // var blob;
 
@@ -126,8 +131,16 @@ async function encodeSelectedFile(fileList: FileList) {
 async function loadSample() {
   const response = await fetch("sample/Lenna.flif?0.2.0rc18");
   const arrayBuffer = await response.arrayBuffer();
+
+  stackMessage("Decoding...");
   const memory: DecodeMemory = {};
-  await libflif.decode(arrayBuffer, result => showRaw(result, memory));
+  try {
+    await libflif.decode(arrayBuffer, result => showRaw(result, memory));
+    stackMessage("Successfully decoded.");
+  }
+  catch (err) {
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+  }
 }
 
 function show(blob: Blob) {
