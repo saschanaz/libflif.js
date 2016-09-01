@@ -123,7 +123,7 @@ async function encodedSelectedAnimation(file: File) {
   stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB APNG file...`);
   try {
     exportResult = await APNGExporter.get(file);
-    stackMessage(`Decoded to independent frames: width=${exportResult.width} px, height=${exportResult.height} px, loop count=${exportResult.loopCount}, duration=${exportResult.duration}`);
+    stackMessage(`Decoded to independent frames: width=${exportResult.width} px, height=${exportResult.height} px, frame count=${exportResult.frames.length}, loop count=${exportResult.loopCount}, duration=${exportResult.duration} ms`);
   }
   catch (err) {
     stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
@@ -257,6 +257,7 @@ async function toBlob(canvas: HTMLCanvasElement) {
     });
   }
   else if (canvas.msToBlob) {
+    await new Promise(resolve => setTimeout(resolve, 0));
     return canvas.msToBlob();
   }
 }
