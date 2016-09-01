@@ -4,3 +4,6 @@
 [submodule "submodules/apng-exporter"]
 	path = submodules/apng-exporter
 	url = https://github.com/SaschaNaz/apng-exporter.git
+[submodule "submodules/gif-exporter"]
+	path = submodules/gif-exporter
+	url = https://github.com/SaschaNaz/gif-exporter.git

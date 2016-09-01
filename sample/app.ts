@@ -4,7 +4,8 @@ declare var downloader: HTMLAnchorElement;
 declare var downloaderButton: HTMLInputElement;
 declare var decodeButton: HTMLInputElement;
 declare var encodeButton: HTMLInputElement;
-declare var encodeAnimationButton: HTMLInputElement;
+declare var encodeAPNGButton: HTMLInputElement;
+declare var encodeGIFButton: HTMLInputElement;
 declare var sampleButton: HTMLInputElement;
 
 const decoderCanvas = document.createElement("canvas");
@@ -42,14 +43,27 @@ document.addEventListener("DOMContentLoaded", () => {
       unlockButtons();
     }
   });
-  encodeAnimationButton.addEventListener("change", async () => {
-    if (encodeAnimationButton.files.length === 0) {
+  encodeAPNGButton.addEventListener("change", async () => {
+    if (encodeAPNGButton.files.length === 0) {
       return;
     }
     clearMessage();
     lockButtons();
     try {
-      await encodedSelectedAnimation(encodeAnimationButton.files[0]);
+      await encodedSelectedAPNG(encodeAPNGButton.files[0]);
+    }
+    finally {
+      unlockButtons();
+    }
+  });
+  encodeGIFButton.addEventListener("change", async () => {
+    if (encodeGIFButton.files.length === 0) {
+      return;
+    }
+    clearMessage();
+    lockButtons();
+    try {
+      await encodedSelectedGIF(encodeGIFButton.files[0]);
     }
     finally {
       unlockButtons();
@@ -94,28 +108,10 @@ async function encodeSelectedFile(fileList: FileList) {
     });
   }
 
-  let encodeResult: ArrayBuffer;
-  try {
-    encodeResult = await libflif.encode({ frames });
-    stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
-  }
-  catch (err) {
-    stackMessage(`Encoding failed: ${err.message || "Unspecified error"}`);
-  }
-  downloaderButton.disabled = false;
-  downloader.href = URL.createObjectURL(new Blob([encodeResult]), { oneTimeOnly: true });
-  (downloader as any).download = `${nameSplit.displayName}.flif`;
-  const memory: DecodeMemory = {};
-  try {
-    await libflif.decode(encodeResult, result => showRaw(result, memory));
-    stackMessage("Successfully decoded.");
-  }
-  catch (err) {
-    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
-  }
+  await encodeCommon(frames, nameSplit.displayName);
 }
 
-async function encodedSelectedAnimation(file: File) {
+async function encodedSelectedAPNG(file: File) {
   const nameSplit = splitFileName(file.name);
   const extUpper = nameSplit.extension.toUpperCase();
   let exportResult: APNGExporter.IndependentExportResult;
@@ -139,18 +135,48 @@ async function encodedSelectedAnimation(file: File) {
     });
   }
 
+  await encodeCommon(frames, nameSplit.displayName);
+}
+
+async function encodedSelectedGIF(file: File) {
+  const nameSplit = splitFileName(file.name);
+  const extUpper = nameSplit.extension.toUpperCase();
+  let exportResult: GIFExporter.ExportResult;
+
+  stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB GIF file...`);
+  try {
+    exportResult = await GIFExporter.get(file);
+    stackMessage(`Decoded to independent frames: width=${exportResult.width} px, height=${exportResult.height} px, frame count=${exportResult.frames.length}, duration=${exportResult.duration} ms`);
+  }
+  catch (err) {
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+  }
+
+  const frames: libflifFrame[] = [];
+  for (let frame of exportResult.frames) {
+    frames.push({
+      data: (await decodeToRaw(frame.blob)).arrayBuffer,
+      frameDelay: frame.delay,
+      width: exportResult.width,
+      height: exportResult.height
+    });
+  }
+
+  await encodeCommon(frames, nameSplit.displayName);
+}
+
+async function encodeCommon(frames: libflifFrame[], displayName: string) {
   let encodeResult: ArrayBuffer;
   try {
-    encodeResult = await libflif.encode({ frames, loop: exportResult.loopCount });
+    encodeResult = await libflif.encode({ frames });
     stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
   }
   catch (err) {
     stackMessage(`Encoding failed: ${err.message || "Unspecified error"}`);
   }
-
   downloaderButton.disabled = false;
   downloader.href = URL.createObjectURL(new Blob([encodeResult]), { oneTimeOnly: true });
-  (downloader as any).download = `${nameSplit.displayName}.flif`;
+  (downloader as any).download = `${displayName}.flif`;
   const memory: DecodeMemory = {};
   try {
     await libflif.decode(encodeResult, result => showRaw(result, memory));
@@ -253,10 +279,11 @@ async function decodeToRaw(blob: Blob) {
 async function toBlob(canvas: HTMLCanvasElement) {
   if (canvas.toBlob) {
     return new Promise<Blob>((resolve, reject) => {
-      (canvas as any).toBlob((blob: Blob) => resolve(blob));
+      (canvas as any).toBlob(resolve);
     });
   }
   else if (canvas.msToBlob) {
+    // not exactly asynchronous but less blocking in loop
     await new Promise(resolve => setTimeout(resolve, 0));
     return canvas.msToBlob();
   }
@@ -279,9 +306,9 @@ function stackMessage(text: string) {
 }
 
 function lockButtons() {
-  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = true;
+  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = encodeAPNGButton.disabled = encodeGIFButton.disabled = true;
 }
 
 function unlockButtons() {
-  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = false;
+  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = encodeAPNGButton.disabled = encodeGIFButton.disabled = false;
 }

@@ -7,6 +7,7 @@
   <title>libflif.js Testing Page</title>
   <link rel="stylesheet" href="sample/app.css" type="text/css" />
   <script src="submodules/apng-exporter/lib/apng-exporter.js"></script>
+  <script src="submodules/gif-exporter/lib/gif-exporter.js"></script>
   <script>
   var libflif = {};
   libflif.libDir = window.URLSearchParams && new URL(window.location).searchParams.get("dev") === "1" ? "built" : "lib";
@@ -35,7 +36,10 @@
       (Select multiple files to make them animated)
     </p>
     <p>
-      Load an APNG file to encode: <input type="file" id="encodeAnimationButton" accept="image/png" />
+      Load an APNG file to encode: <input type="file" id="encodeAPNGButton" accept="image/png" />
+    </p>
+    <p>
+      Load a GIF file to encode: <input type="file" id="encodeGIFButton" accept="image/gif" />
     </p>
   </div>
   <div>
