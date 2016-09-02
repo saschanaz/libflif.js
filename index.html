@@ -41,11 +41,15 @@
     <p>
       Load a GIF file to encode: <input type="file" id="encodeGIFButton" accept="image/gif" />
     </p>
+    <p>
+      Load from clipboard to encode: <input type="text" id="encodeClipboardButton" placeholder="Paste here" /><br />
+      (Also, drag-and-drop works)
+    </p>
   </div>
   <div>
     <a download="" id="downloader">
       <input type="button" id="downloaderButton" value="Download encoded result" disabled="disabled" />
-    </a> 
+    </a>
   </div>
   <div id="message"></div>
   <img id="image" />

@@ -2,12 +2,19 @@
   width: device-width;
 }
 
+html, body {
+  margin: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
 body {
-    font-family: 'Segoe UI', sans-serif;
+  padding: 8px;   
+  font-family: 'Segoe UI', sans-serif;
 }
 
 span {
-    font-style: italic;
+  font-style: italic;
 }
 
 img {

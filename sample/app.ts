@@ -6,6 +6,7 @@ declare var decodeButton: HTMLInputElement;
 declare var encodeButton: HTMLInputElement;
 declare var encodeAPNGButton: HTMLInputElement;
 declare var encodeGIFButton: HTMLInputElement;
+declare var encodeClipboardButton: HTMLInputElement;
 declare var sampleButton: HTMLInputElement;
 
 const decoderCanvas = document.createElement("canvas");
@@ -69,6 +70,36 @@ document.addEventListener("DOMContentLoaded", () => {
       unlockButtons();
     }
   });
+  encodeClipboardButton.addEventListener("paste", async (ev: ClipboardEvent) => {
+    ev.preventDefault();
+    clearMessage();
+    lockButtons();
+    try {
+      encodeDataTransfer(ev.clipboardData);
+    }
+    finally {
+      unlockButtons();
+    }
+  });
+  document.body.addEventListener("dragover", ev => {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = "copy";
+  });
+  document.body.addEventListener("dragleave", ev => {
+  
+  })
+  document.body.addEventListener("drop", async (ev) => {
+    ev.stopPropagation();
+    ev.preventDefault();
+    clearMessage();
+    lockButtons();
+    try {
+      encodeDataTransfer(ev.dataTransfer);
+    }
+    finally {
+      unlockButtons();
+    }
+  })
   sampleButton.addEventListener("click", async () => {
     clearMessage();
     lockButtons();
@@ -89,7 +120,8 @@ async function decodeSelectedFile(file: File) {
     stackMessage("Successfully decoded.");
   }
   catch (err) {
-    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error, please check console message."}`);
+    throw err;
   }
 }
 
@@ -100,7 +132,14 @@ async function encodeSelectedFile(fileList: FileList) {
   const frames: libflifFrame[] = [];
   for (let file of Array.from(fileList)) {
     stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB ${extUpper} file...`);
-    const raw = await decodeToRaw(file);
+    let raw: Raw;
+    try {
+      raw = await decodeToRaw(file);
+    }
+    catch (err) {
+      stackMessage(`Decoding failed (maybe the format is unsupported by browser): ${err.message || "Unspecified error"}`);
+      throw err;
+    }
     stackMessage(`Decoded ${extUpper} to raw pixels: width=${raw.width} px, height=${raw.height} px, size=${(raw.arrayBuffer.byteLength / 1024).toFixed(2)} KiB`);
     frames.push({
       data: raw.arrayBuffer,
@@ -123,7 +162,8 @@ async function encodedSelectedAPNG(file: File) {
     stackMessage(`Decoded to independent frames: width=${exportResult.width} px, height=${exportResult.height} px, frame count=${exportResult.frames.length}, loop count=${exportResult.loopCount}, duration=${exportResult.duration} ms`);
   }
   catch (err) {
-    stackMessage(`Decoding failed: ${err.message || "Unspecified error, please check console message."}`);
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+    throw err;
   }
 
   const frames: libflifFrame[] = [];
@@ -150,7 +190,8 @@ async function encodedSelectedGIF(file: File) {
     stackMessage(`Decoded to independent frames: width=${exportResult.width} px, height=${exportResult.height} px, frame count=${exportResult.frames.length}, duration=${exportResult.duration} ms`);
   }
   catch (err) {
-    stackMessage(`Decoding failed: ${err.message || "Unspecified error, please check console message."}`);
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+    throw err;
   }
 
   const frames: libflifFrame[] = [];
@@ -164,6 +205,25 @@ async function encodedSelectedGIF(file: File) {
   }
 
   await encodeCommon(frames, nameSplit.displayName);
+}
+
+async function encodeDataTransfer(dataTransfer: DataTransfer) {
+  const firstImage = Array.from(dataTransfer.items).filter(item => item.type.startsWith("image/"))[0];
+  if (!firstImage) {
+    return;
+  }
+
+  const file = firstImage.getAsFile();
+  stackMessage(`Retrieved image from clipboard: format=${file.type}, size=${(file.size / 1024).toFixed(2)} KiB`);
+  const nameSplit = splitFileName(file.name || "output.unknown");
+  const decodeResult = await decodeToRaw(file);
+  stackMessage(`Decoded to raw pixels: width=${decodeResult.width} px, height=${decodeResult.height} px, size=${(decodeResult.arrayBuffer.byteLength / 1024).toFixed(2)} KiB`);
+
+  await encodeCommon([{
+    data: decodeResult.arrayBuffer,
+    width: decodeResult.width,
+    height: decodeResult.height
+  }], nameSplit.displayName || "output")
 }
 
 async function encodeCommon(frames: libflifFrame[], displayName: string) {
@@ -185,6 +245,7 @@ async function encodeCommon(frames: libflifFrame[], displayName: string) {
   }
   catch (err) {
     stackMessage(`Decoding failed: ${err.message || "Unspecified error, please check console message."}`);
+    throw err;
   }
 }
 
@@ -200,6 +261,7 @@ async function loadSample() {
   }
   catch (err) {
     stackMessage(`Decoding failed: ${err.message || "Unspecified error, please check console message."}`);
+    throw err;
   }
 }
 
@@ -261,9 +323,15 @@ function toArrayBuffer(blob: Blob) {
   });
 }
 
+interface Raw {
+  arrayBuffer: ArrayBuffer;
+  width: number;
+  height: number;
+}
 async function decodeToRaw(blob: Blob) {
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
+    image.onerror = err => reject(err);
     image.onload = () => resolve(image);
     image.src = URL.createObjectURL(blob, { oneTimeOnly: true });
   })
