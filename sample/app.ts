@@ -70,6 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   sampleButton.addEventListener("click", async () => {
+    clearMessage();
     lockButtons();
     try {
       await loadSample();
