@@ -12,7 +12,7 @@ interface libflifWorkerInputMessageEvent extends MessageEvent {
 
 self.addEventListener("message", (ev: libflifWorkerInputMessageEvent) => {
     (self as any as Worker).postMessage({
-        debug: `received data for ${ev.data.type}`
+        debug: `received data for ${ev.data.type}. Current memory size: ${libflifem.buffer.byteLength}`
     });
     try {
         if (ev.data.type === "decode") {
@@ -29,7 +29,7 @@ self.addEventListener("message", (ev: libflifWorkerInputMessageEvent) => {
         else {
             const result = encode(ev.data.input as libflifEncoderInput);
             (self as any as Worker).postMessage({
-                debug: `encode complete, sending data to wrapper.`
+                debug: `encode complete, sending data to wrapper. Current memory size: ${libflifem.buffer.byteLength}`
             });
             (self as any as Worker).postMessage({
                 uuid: ev.data.uuid,
@@ -49,7 +49,7 @@ function decode(uuid: string, input: ArrayBuffer) {
     const callback = libflifem.Runtime.addFunction((quality: number, bytesRead: number) => {
         const frames: libflifFrame[] = [];
         for (let i = 0; i < decoder.numImages; i++) {
-            const frame = decoder.getImage(i); 
+            const frame = decoder.getImage(i);
             // TODO: replace ArrayBuffer to SharedArrayBuffer
             // (currently impossible on Nightly because of structured clone error
             const bufferView = new Uint8Array(new ArrayBuffer(frame.width * frame.height * 4));
@@ -78,7 +78,7 @@ function decode(uuid: string, input: ArrayBuffer) {
         (self as any as Worker).postMessage({
             uuid,
             progress,
-            debug: `progressive decoding: width=${frames[0].width} height=${frames[0].height} quality=${quality}, bytesRead=${bytesRead}`
+            debug: `progressive decoding: width=${frames[0].width} height=${frames[0].height} quality=${quality}, bytesRead=${bytesRead}. Current memory size: ${libflifem.buffer.byteLength}`
         });
         return quality + 1000;
     });

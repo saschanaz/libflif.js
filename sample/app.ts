@@ -122,7 +122,7 @@ async function encodedSelectedAPNG(file: File) {
     stackMessage(`Decoded to independent frames: width=${exportResult.width} px, height=${exportResult.height} px, frame count=${exportResult.frames.length}, loop count=${exportResult.loopCount}, duration=${exportResult.duration} ms`);
   }
   catch (err) {
-    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error, please check console message."}`);
   }
 
   const frames: libflifFrame[] = [];
@@ -149,7 +149,7 @@ async function encodedSelectedGIF(file: File) {
     stackMessage(`Decoded to independent frames: width=${exportResult.width} px, height=${exportResult.height} px, frame count=${exportResult.frames.length}, duration=${exportResult.duration} ms`);
   }
   catch (err) {
-    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error, please check console message."}`);
   }
 
   const frames: libflifFrame[] = [];
@@ -172,7 +172,7 @@ async function encodeCommon(frames: libflifFrame[], displayName: string) {
     stackMessage(`Successfully encoded as ${(encodeResult.byteLength / 1024).toFixed(2)} KiB FLIF file and now decoding again by libflif.js....`);
   }
   catch (err) {
-    stackMessage(`Encoding failed: ${err.message || "Unspecified error"}`);
+    stackMessage(`Encoding failed: ${err.message || "Unspecified error, please check console message."}`);
   }
   downloaderButton.disabled = false;
   downloader.href = URL.createObjectURL(new Blob([encodeResult]), { oneTimeOnly: true });
@@ -183,7 +183,7 @@ async function encodeCommon(frames: libflifFrame[], displayName: string) {
     stackMessage("Successfully decoded.");
   }
   catch (err) {
-    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error, please check console message."}`);
   }
 }
 
@@ -198,7 +198,7 @@ async function loadSample() {
     stackMessage("Successfully decoded.");
   }
   catch (err) {
-    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error, please check console message."}`);
   }
 }
 

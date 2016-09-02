@@ -19,6 +19,7 @@ interface EmscriptenModule {
 
     callMain(args: string[]): void;
 
+    buffer: ArrayBuffer;
     HEAP8: Int8Array;
     HEAP16: Int16Array;
     HEAP32: Int32Array;
