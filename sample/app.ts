@@ -154,11 +154,11 @@ async function encodeSelectedFile(fileList: FileList) {
 async function encodedSelectedAPNG(file: File) {
   const nameSplit = splitFileName(file.name);
   const extUpper = nameSplit.extension.toUpperCase();
-  let exportResult: APNGExporter.IndependentExportResult;
+  let exportResult: APNGExporter.IndependentExportResult<ImageData>;
 
   stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB APNG file...`);
   try {
-    exportResult = await APNGExporter.get(file);
+    exportResult = await APNGExporter.get(file, "imagedata");
     stackMessage(`Decoded to independent frames: width=${exportResult.width} px, height=${exportResult.height} px, frame count=${exportResult.frames.length}, loop count=${exportResult.loopCount}, duration=${exportResult.duration} ms`);
   }
   catch (err) {
@@ -169,7 +169,7 @@ async function encodedSelectedAPNG(file: File) {
   const frames: libflifFrame[] = [];
   for (let frame of exportResult.frames) {
     frames.push({
-      data: (await decodeToRaw(frame.blob)).arrayBuffer,
+      data: frame.image.data.buffer,
       frameDelay: frame.delay,
       width: exportResult.width,
       height: exportResult.height
@@ -182,11 +182,11 @@ async function encodedSelectedAPNG(file: File) {
 async function encodedSelectedGIF(file: File) {
   const nameSplit = splitFileName(file.name);
   const extUpper = nameSplit.extension.toUpperCase();
-  let exportResult: GIFExporter.ExportResult;
+  let exportResult: GIFExporter.ExportResult<ImageData>;
 
   stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB GIF file...`);
   try {
-    exportResult = await GIFExporter.get(file);
+    exportResult = await GIFExporter.get(file, "imagedata");
     stackMessage(`Decoded to independent frames: width=${exportResult.width} px, height=${exportResult.height} px, frame count=${exportResult.frames.length}, duration=${exportResult.duration} ms`);
   }
   catch (err) {
@@ -197,7 +197,7 @@ async function encodedSelectedGIF(file: File) {
   const frames: libflifFrame[] = [];
   for (let frame of exportResult.frames) {
     frames.push({
-      data: (await decodeToRaw(frame.blob)).arrayBuffer,
+      data: frame.image.data.buffer,
       frameDelay: frame.delay,
       width: exportResult.width,
       height: exportResult.height
