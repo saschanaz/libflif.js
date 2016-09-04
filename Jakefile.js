@@ -52,7 +52,15 @@ task("cpp", ["main"], () => {
 }, jakeAsyncTaskOptionBag);
 
 desc("Run Jakefile-main.js");
-task("default", ["js", "cpp"], () => {
+task("cppdec", ["main"], () => {
+    console.log("Building FLIF decoder-only...");
+    jake.exec(["jake -f Jakefile-main.js libflifdec"], () => {
+        complete();
+    }, jakeExecOptionBag);
+}, jakeAsyncTaskOptionBag);
+
+desc("Run Jakefile-main.js");
+task("default", ["js", "cpp", "cppdec"], () => {
 
 });
 

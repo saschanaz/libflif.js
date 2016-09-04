@@ -167,6 +167,7 @@ public:
     }
 };
 
+#ifndef DECODER_ONLY
 class FLIFEncoderWrapper {
 private:
     FLIF_ENCODER* encoder;
@@ -271,6 +272,7 @@ public:
         flif_encoder_set_frame_shape(this->encoder, frs ? 1 : 0);
     }
 };
+#endif
 
 EMSCRIPTEN_BINDINGS(libflifem) {
     // function("main", &main, allow_raw_pointers());
@@ -307,6 +309,7 @@ EMSCRIPTEN_BINDINGS(libflifem) {
         .function("setFirstCallbackQuality", &FLIFDecoderWrapper::setFirstCallbackQuality)
         ;
     
+    #ifndef DECODER_ONLY
     class_<FLIFEncoderWrapper>("FLIFEncoder")
         .constructor()
         .function("clearBuffer", &FLIFEncoderWrapper::clearBuffer)
@@ -329,6 +332,7 @@ EMSCRIPTEN_BINDINGS(libflifem) {
         .function("setYCoCg", &FLIFEncoderWrapper::setYCoCg)
         .function("setFrameShape", &FLIFEncoderWrapper::setFrameShape)
         ;
+    #endif
 }
 
 #endif

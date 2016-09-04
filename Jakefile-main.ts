@@ -5,12 +5,13 @@ const cxx = "em++";
 const exportName = "-s EXPORT_NAME='_libflifem' -s MODULARIZE=1";
 const ports = "-s USE_LIBPNG=1 -s USE_ZLIB=1";
 const bind = "--bind wrapper/bind.cpp";
-const optimizations = "-D NDEBUG -O2 -ftree-vectorize"; // disable -O2 temporarily (emscripten #4519)
+const optimizations = "-D NDEBUG -O2 -ftree-vectorize";
 const flags = "-D LODEPNG_NO_COMPILE_PNG -D LODEPNG_NO_COMPILE_DISK";
 const misc = "-s ALLOW_MEMORY_GROWTH=1 -s DEMANGLE_SUPPORT=1"
 const commandMisc = `${misc} -s EXTRA_EXPORTED_RUNTIME_METHODS=['FS']`;
 const libMisc = `${misc} -s RESERVED_FUNCTION_POINTERS=20 -s NO_FILESYSTEM=1`;
-const libOptimizations = "-D NDEBUG -Oz --llvm-lto 1 -s USE_SDL=0 -s ELIMINATE_DUPLICATE_FUNCTIONS=1"; // disable -O2 temporarily (emscripten #4519)
+const libdecMisc = `${libMisc} -D DECODER_ONLY`;
+const libOptimizations = "-D NDEBUG -Oz --llvm-lto 1 -s USE_SDL=0 -s ELIMINATE_DUPLICATE_FUNCTIONS=1";
 
 const libraryInclude = `-I ${appendDir("library/")}`
 
@@ -88,6 +89,15 @@ task("commandline", [], () => {
 desc("Build libflif");
 task("libflif", [], () => {
     const command = `${cxx} ${flags} ${libMisc} -std=c++11 ${bind} ${exportName} ${ports} ${libOptimizations} -g0 -Wall ${libraryInclude} ${libFilesCpp} ${appendDir("library/flif-interface.cpp")} -o built/libflif.js`;
+    console.log(command);
+    jake.exec([command], () => {
+        complete();
+    }, jakeExecOptionBag);
+}, jakeAsyncTaskOptionBag);
+
+desc("Build libflifdec");
+task("libflifdec", [], () => {
+    const command = `${cxx} ${flags} ${libdecMisc} -std=c++11 ${bind} ${exportName} ${ports} ${libOptimizations} -g0 -Wall ${libraryInclude} ${libFilesCpp} ${appendDir("library/flif-interface.cpp")} -o built/libflifdec.js`;
     console.log(command);
     jake.exec([command], () => {
         complete();
