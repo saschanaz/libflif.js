@@ -1,6 +1,11 @@
 // This should later be a Web Worker, currently this is just a normal script
 
 importScripts("libflif.js");
+let notifyReady: () => void;
+const whenReady = new Promise<void>(resolve => notifyReady = resolve);
+const libflifem = _libflifem({
+    onRuntimeInitialized: () => notifyReady()
+});
 
 declare class SharedArrayBuffer extends ArrayBuffer {
 
@@ -10,7 +15,8 @@ interface libflifWorkerInputMessageEvent extends MessageEvent {
     data: libflifWorkerInputMessageData;
 }
 
-self.addEventListener("message", (ev: libflifWorkerInputMessageEvent) => {
+self.addEventListener("message", async (ev: libflifWorkerInputMessageEvent) => {
+    await whenReady;
     (self as any as Worker).postMessage({
         debug: `received data for ${ev.data.type}. Current memory size: ${libflifem.buffer.byteLength}`
     });
@@ -41,8 +47,6 @@ self.addEventListener("message", (ev: libflifWorkerInputMessageEvent) => {
         (self as any as Worker).postMessage({ uuid: ev.data.uuid, error: err.stack || err.message || "Unspecified error occurred" });
     }
 })
-
-const libflifem = _libflifem();
 
 function decode(uuid: string, input: ArrayBuffer) {
     const decoder = new libflifem.FLIFDecoder();
