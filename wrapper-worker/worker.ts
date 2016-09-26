@@ -4,7 +4,7 @@ importScripts("libflif.js");
 let notifyReady: () => void;
 const whenReady = new Promise<void>(resolve => notifyReady = resolve);
 const libflifem = _libflifem({
-    onRuntimeInitialized: () => notifyReady()
+    onRuntimeInitialized: notifyReady
 });
 
 declare class SharedArrayBuffer extends ArrayBuffer {

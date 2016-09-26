@@ -31,7 +31,7 @@ const filesH = [
     "io.cpp",
     "config.h",
     "compiler-specific.hpp",
-    // "../extern/lodepng.h"
+    "../extern/lodepng.h"
 ].map(item => appendDir(item)).join(' ');
 const filesCpp = [
     "maniac/chance.cpp",
@@ -49,7 +49,7 @@ const filesCpp = [
     "flif-enc.cpp",
     "flif-dec.cpp",
     "io.cpp",
-    // "../extern/lodepng.cpp"
+    "../extern/lodepng.cpp"
 ].map(item => appendDir(item)).join(' ');
 const libFilesCpp = [
     "maniac/chance.cpp",
