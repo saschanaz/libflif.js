@@ -4,8 +4,7 @@ declare var downloader: HTMLAnchorElement;
 declare var downloaderButton: HTMLInputElement;
 declare var decodeButton: HTMLInputElement;
 declare var encodeButton: HTMLInputElement;
-declare var encodeAPNGButton: HTMLInputElement;
-declare var encodeGIFButton: HTMLInputElement;
+declare var encodeAnimationButton: HTMLInputElement;
 declare var encodeClipboardButton: HTMLInputElement;
 declare var sampleButton: HTMLInputElement;
 
@@ -44,27 +43,25 @@ document.addEventListener("DOMContentLoaded", () => {
       unlockButtons();
     }
   });
-  encodeAPNGButton.addEventListener("change", async () => {
-    if (encodeAPNGButton.files.length === 0) {
+  encodeAnimationButton.addEventListener("change", async () => {
+    if (encodeAnimationButton.files.length === 0) {
       return;
     }
     clearMessage();
     lockButtons();
+
+    const targetFile = encodeAnimationButton.files[0];
+    const mimeType = await Picnature.map(targetFile);
     try {
-      await encodedSelectedAPNG(encodeAPNGButton.files[0]);
-    }
-    finally {
-      unlockButtons();
-    }
-  });
-  encodeGIFButton.addEventListener("change", async () => {
-    if (encodeGIFButton.files.length === 0) {
-      return;
-    }
-    clearMessage();
-    lockButtons();
-    try {
-      await encodedSelectedGIF(encodeGIFButton.files[0]);
+      if (mimeType === "image/png") {
+        await encodedSelectedAPNG(targetFile);
+      }
+      else if (mimeType === "image/gif") {
+        await encodedSelectedGIF(targetFile);
+      }
+      else {
+        alert("Cannot detect image MIME type.");
+      }
     }
     finally {
       unlockButtons();
@@ -375,9 +372,9 @@ function stackMessage(text: string) {
 }
 
 function lockButtons() {
-  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = encodeAPNGButton.disabled = encodeGIFButton.disabled = true;
+  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = encodeAnimationButton.disabled = true;
 }
 
 function unlockButtons() {
-  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = encodeAPNGButton.disabled = encodeGIFButton.disabled = false;
+  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = encodeAnimationButton.disabled = false;
 }

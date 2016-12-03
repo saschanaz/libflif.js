@@ -13,6 +13,7 @@
         "../wrapper-worker/workerinterface.d.ts",
         "../built/wrapper.d.ts",
         "../submodules/apng-exporter/lib/apng-exporter.d.ts",
-        "../submodules/gif-exporter/lib/gif-exporter.d.ts"
+        "../submodules/gif-exporter/lib/gif-exporter.d.ts",
+        "../submodules/picnature/lib/picnature.d.ts"
     ]
 }
