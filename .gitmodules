@@ -10,3 +10,6 @@
 [submodule "picnature"]
 	path = submodules/picnature
 	url = https://github.com/SaschaNaz/picnature.git
+[submodule "submodules/tiffjs"]
+	path = submodules/tiffjs
+	url = https://github.com/SaschaNaz/tiff-js.git
