@@ -7,3 +7,6 @@
 [submodule "submodules/gif-exporter"]
 	path = submodules/gif-exporter
 	url = https://github.com/SaschaNaz/gif-exporter.git
+[submodule "picnature"]
+	path = submodules/picnature
+	url = https://github.com/SaschaNaz/picnature.git
