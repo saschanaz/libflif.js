@@ -59,6 +59,9 @@ document.addEventListener("DOMContentLoaded", () => {
       else if (mimeType === "image/gif") {
         await encodedSelectedGIF(targetFile);
       }
+      else if (mimeType === "image/tiff") {
+        await encodedSelectedTIFF(targetFile);
+      }
       else {
         alert("Cannot detect image MIME type.");
       }
@@ -83,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ev.dataTransfer.dropEffect = "copy";
   });
   document.body.addEventListener("dragleave", ev => {
-  
+
   })
   document.body.addEventListener("drop", async (ev) => {
     ev.stopPropagation();
@@ -200,6 +203,32 @@ async function encodedSelectedGIF(file: File) {
       height: exportResult.height
     });
   }
+
+  await encodeCommon(frames, nameSplit.displayName);
+}
+
+async function encodedSelectedTIFF(file: File) {
+  const nameSplit = splitFileName(file.name);
+  const extUpper = nameSplit.extension.toUpperCase();
+  let exportResult;
+
+  stackMessage(`Encoding ${(file.size / 1024).toFixed(2)} KiB TIFF file...`);
+  try {
+    exportResult = new TIFFParser().parseTIFF(await toArrayBuffer(file));
+
+    stackMessage(`Decoded ${extUpper} to raw pixels: width=${exportResult.width} px, height=${exportResult.height} px, size=${(exportResult.data.byteLength / 1024).toFixed(2)} KiB`);
+  }
+  catch (err) {
+    stackMessage(`Decoding failed: ${err.message || "Unspecified error"}`);
+    throw err;
+  }
+
+  const frames: libflifFrame[] = [{
+    data: exportResult.data.buffer,
+    width: exportResult.width,
+    height: exportResult.height,
+    depth: exportResult.data.BYTES_PER_ELEMENT * 8
+  }];
 
   await encodeCommon(frames, nameSplit.displayName);
 }

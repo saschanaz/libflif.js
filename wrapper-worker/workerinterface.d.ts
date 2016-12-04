@@ -2,6 +2,7 @@ interface libflifFrame {
     data: ArrayBuffer;
     width: number;
     height: number;
+    depth?: number;
     frameDelay?: number;
 }
 

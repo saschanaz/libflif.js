@@ -104,14 +104,21 @@ function encode(input: libflifEncoderInput) {
     const encoder = new libflifem.FLIFEncoder();
     const images: FLIFImage[] = [];
     for (let frame of input.frames) {
-        const image = libflifem.FLIFImage.create(frame.width, frame.height);
-        const bufferView = new Uint8Array(frame.data);
+        const depth = frame.depth || 8;
+        const multiplier = depth / 8;
+        const image = (depth === 16 ? libflifem.FLIFImage.createHDR : libflifem.FLIFImage.create)(frame.width, frame.height);
+        const bufferView = new (depth === 16 ? Uint16Array : Uint8Array)(frame.data);
+        const size = frame.width * 4;
         for (let i = 0; i < frame.height; i++) {
-            const size = frame.width * 4;
             const offset = size * i;
-            const allocated = libflifem._malloc(size);
-            libflifem.HEAP8.set(bufferView.slice(offset, offset + size), allocated);
-            image.writeRowRGBA8(i, allocated, size);
+            const allocated = libflifem._malloc(size * multiplier);
+            libflifem.HEAP8.set(new Uint8Array(bufferView.slice(offset, offset + size).buffer), allocated);
+            if (depth === 16) {
+                image.writeRowRGBA16(i, allocated, size * multiplier);
+            }
+            else {
+                image.writeRowRGBA8(i, allocated, size * multiplier);
+            }
             libflifem._free(allocated);
         }
         if ("frameDelay" in frame) {

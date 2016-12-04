@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="sample/app.css" type="text/css" />
   <script src="submodules/apng-exporter/lib/apng-exporter.js"></script>
   <script src="submodules/gif-exporter/lib/gif-exporter.js"></script>
+  <script src="submodules/tiffjs/lib/tiff.js"></script>
   <script src="submodules/picnature/lib/picnature.js"></script>
   <script>
   var libflif = {};
@@ -37,7 +38,7 @@
       (Select multiple files to make them animated)
     </p>
     <p>
-      Load an APNG/GIF file to encode: <input type="file" id="encodeAnimationButton" accept="image/png,image/gif" />
+      Load an APNG/GIF/TIFF file to encode: <input type="file" id="encodeAnimationButton" accept="image/png,image/gif,image/tiff" />
     </p>
     <p>
       Load from clipboard to encode: <input type="text" id="encodeClipboardButton" placeholder="Paste here" /><br />
