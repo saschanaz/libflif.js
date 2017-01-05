@@ -401,7 +401,7 @@ function splitFileName(filename: string) {
 
 function stackMessage(text: string) {
   const p = document.createElement("p");
-  p.textContent = text;
+  p.textContent = `${text} ${performance.now()}`;
   message.appendChild(p);
 }
 
