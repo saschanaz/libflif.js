@@ -4,7 +4,7 @@ declare namespace libflif {
 }
 declare namespace libflif {
     function startWorker(): void;
-    function decode(input: ArrayBuffer | Blob, callback: (result: libflifProgressiveDecodingResult) => any): Promise<void>;
+    function decode(input: ArrayBuffer | Blob, callback: (result: libflifProgressiveDecodingResult) => any, options?: libflifDecoderOptions): Promise<void>;
     function encode(input: libflifEncoderInput): Promise<ArrayBuffer>;
     function observeDOM(): void;
 }

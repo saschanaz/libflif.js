@@ -3,6 +3,7 @@ declare var message: HTMLDivElement;
 declare var downloader: HTMLAnchorElement;
 declare var downloaderButton: HTMLInputElement;
 declare var decodeButton: HTMLInputElement;
+declare var disableProgressiveBox: HTMLInputElement;
 declare var encodeButton: HTMLInputElement;
 declare var encodeAnimationButton: HTMLInputElement;
 declare var encodeClipboardButton: HTMLInputElement;
@@ -116,7 +117,7 @@ async function decodeSelectedFile(file: File) {
   stackMessage("Decoding...");
   const memory: DecodeMemory = {};
   try {
-    await libflif.decode(file, result => showRaw(result, memory));
+    await libflif.decode(file, result => showRaw(result, memory), getDecodeOption());
     stackMessage("Successfully decoded.");
   }
   catch (err) {
@@ -266,13 +267,17 @@ async function encodeCommon(frames: libflifFrame[], displayName: string) {
   (downloader as any).download = `${displayName}.flif`;
   const memory: DecodeMemory = {};
   try {
-    await libflif.decode(encodeResult, result => showRaw(result, memory));
+    await libflif.decode(encodeResult, result => showRaw(result, memory), getDecodeOption());
     stackMessage("Successfully decoded.");
   }
   catch (err) {
     stackMessage(`Decoding failed: ${err.message || "Unspecified error, please check console message."}`);
     throw err;
   }
+}
+
+function getDecodeOption(): libflifDecoderOptions {
+  return { progressiveInitialLimit: disableProgressiveBox.checked ? 10000 : 0 }
 }
 
 async function loadSample() {
@@ -282,7 +287,7 @@ async function loadSample() {
   stackMessage("Decoding...");
   const memory: DecodeMemory = {};
   try {
-    await libflif.decode(arrayBuffer, result => showRaw(result, memory));
+    await libflif.decode(arrayBuffer, result => showRaw(result, memory), getDecodeOption());
     stackMessage("Successfully decoded.");
   }
   catch (err) {
