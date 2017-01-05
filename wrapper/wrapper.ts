@@ -34,10 +34,10 @@ namespace libflif {
         })
     }
 
-    export async function decode(input: ArrayBuffer | Blob, callback: (result: libflifProgressiveDecodingResult) => any) {
+    export async function decode(input: ArrayBuffer | Blob, callback: (result: libflifProgressiveDecodingResult) => any, options?: libflifDecoderOptions) {
         const arrayBuffer = input instanceof Blob ? await convertToArrayBuffer(input) : input;
 
-        await sendMessage("decode", arrayBuffer, { callback });
+        await sendMessage("decode", { data: arrayBuffer, options }, { callback });
     }
 
     export function encode(input: libflifEncoderInput) {
@@ -45,9 +45,11 @@ namespace libflif {
     }
 
     interface SendMessageBag {
-        callback?: (result: libflifProgressiveDecodingResult) => any;
+        callback: (result: libflifProgressiveDecodingResult) => any;
     }
-    async function sendMessage(type: "decode" | "encode", input: ArrayBuffer | libflifEncoderInput, bag?: SendMessageBag) {
+    async function sendMessage(type: "decode", input: libflifDecoderInput, bag: SendMessageBag): Promise<ArrayBuffer>;
+    async function sendMessage(type: "encode", input: libflifEncoderInput): Promise<ArrayBuffer>;
+    async function sendMessage(type: "decode" | "encode", input: libflifDecoderInput | libflifEncoderInput, bag?: SendMessageBag) {
         startWorker();
 
         return new Promise<ArrayBuffer>((resolve, reject) => {

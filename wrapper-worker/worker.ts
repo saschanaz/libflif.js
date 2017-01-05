@@ -22,7 +22,7 @@ self.addEventListener("message", async (ev: libflifWorkerInputMessageEvent) => {
     });
     try {
         if (ev.data.type === "decode") {
-            decode(ev.data.uuid, ev.data.input as ArrayBuffer);
+            decode(ev.data.uuid, ev.data.input);
 
             // (self as any as Worker).postMessage({
             //     debug: `decode complete, sending data to wrapper.`
@@ -33,7 +33,7 @@ self.addEventListener("message", async (ev: libflifWorkerInputMessageEvent) => {
             // });
         }
         else {
-            const result = encode(ev.data.input as libflifEncoderInput);
+            const result = encode(ev.data.input);
             (self as any as Worker).postMessage({
                 debug: `encode complete, sending data to wrapper. Current memory size: ${libflifem.buffer.byteLength}`
             });
@@ -48,7 +48,7 @@ self.addEventListener("message", async (ev: libflifWorkerInputMessageEvent) => {
     }
 })
 
-function decode(uuid: string, input: ArrayBuffer) {
+function decode(uuid: string, input: libflifDecoderInput) {
     const decoder = new libflifem.FLIFDecoder();
     const callback = libflifem.Runtime.addFunction((quality: number, bytesRead: number) => {
         const frames: libflifFrame[] = [];
@@ -88,10 +88,10 @@ function decode(uuid: string, input: ArrayBuffer) {
     });
     decoder.setCallback(callback);
 
-    const allocated = libflifem._malloc(input.byteLength);
-    libflifem.HEAP8.set(new Uint8Array(input), allocated);
+    const allocated = libflifem._malloc(input.data.byteLength);
+    libflifem.HEAP8.set(new Uint8Array(input.data), allocated);
     try {
-        decoder.decodeMemory(allocated, input.byteLength);
+        decoder.decodeMemory(allocated, input.data.byteLength);
     }
     finally {
         libflifem._free(allocated);

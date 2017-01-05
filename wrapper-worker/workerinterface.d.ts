@@ -1,3 +1,20 @@
+interface libflifDecoderOptions {
+    crcCheck?: boolean;
+    quality?: number;
+    scale?: number;
+    resize?: [number, number];
+    fit?: [number, number];
+    
+    // libflif.js specific
+    progressiveStep?: number;
+}
+
+interface libflifDecoderInput {
+    data: ArrayBuffer;
+
+    options?: libflifDecoderOptions;
+}
+
 interface libflifFrame {
     data: ArrayBuffer;
     width: number;
@@ -6,19 +23,36 @@ interface libflifFrame {
     frameDelay?: number;
 }
 
+interface libflifEncoderOptions {
+    interlaced?: boolean;
+    learnRepeat?: number;
+    autoColorBuckets?: boolean;
+    paletteSize?: number;
+    lookback?: number;
+    divisor?: number;
+    minSize?: number;
+    splitThreshold?: number;
+    alphaZeroLossless?: boolean;
+    chanceCutoff?: number;
+    chanceAlpha?: number;
+    crcCheck?: number;
+    yCoCg?: boolean;
+    frameShape?: boolean;
+}
+
 interface libflifEncoderInput {
     frames: libflifFrame[];
     loop?: number;
 
-    // TODO: encoder options
+    options?: libflifEncoderOptions;
 }
 
 type libflifWorkerInputMessageData = libflifWorkerDecoderInputMessageData | libflifWorkerEncoderInputMessageData;
 
 interface libflifWorkerDecoderInputMessageData {
-    type: "encode" | "decode";
+    type: "decode";
     uuid: string;
-    input: ArrayBuffer;
+    input: libflifDecoderInput;
 }
 
 interface libflifWorkerEncoderInputMessageData {
