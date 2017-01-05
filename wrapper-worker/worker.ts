@@ -49,6 +49,8 @@ self.addEventListener("message", async (ev: libflifWorkerInputMessageEvent) => {
 })
 
 function decode(uuid: string, input: libflifDecoderInput) {
+    const step = input.options && "progressiveInitialStep" in input.options ? input.options.progressiveStep : 1000;
+
     const decoder = new libflifem.FLIFDecoder();
     const callback = libflifem.Runtime.addFunction((quality: number, bytesRead: number) => {
         const frames: libflifFrame[] = [];
@@ -84,9 +86,12 @@ function decode(uuid: string, input: libflifDecoderInput) {
             progress,
             debug: `progressive decoding: width=${frames[0].width} height=${frames[0].height} quality=${quality}, bytesRead=${bytesRead}. Current memory size: ${libflifem.buffer.byteLength}`
         });
-        return quality + 1000;
+        return quality + step;
     });
     decoder.setCallback(callback);
+    if (input.options) {
+        setDecoderOptions(decoder, input.options);
+    }
 
     const allocated = libflifem._malloc(input.data.byteLength);
     libflifem.HEAP8.set(new Uint8Array(input.data), allocated);
@@ -97,6 +102,27 @@ function decode(uuid: string, input: libflifDecoderInput) {
         libflifem._free(allocated);
         decoder.delete();
         libflifem.Runtime.removeFunction(callback);
+    }
+}
+
+function setDecoderOptions(decoder: FLIFDecoder, options: libflifDecoderOptions) {
+    if ("crcCheck" in options) {
+        decoder.setCRCCheck(options.crcCheck);
+    }
+    if (options.fit instanceof Array) {
+        decoder.setFit(options.fit[0], options.fit[1]);
+    }
+    if ("quality" in options) {
+        decoder.setQuality(options.quality);
+    }
+    if (options.resize instanceof Array) {
+        decoder.setResize(options.resize[0], options.resize[1]);
+    }
+    if ("scale" in options) {
+        decoder.setScale(options.scale);
+    }
+    if ("progressiveInitialLimit" in options) {
+        decoder.setFirstCallbackQuality(options.progressiveInitialLimit)
     }
 }
 
@@ -129,6 +155,10 @@ function encode(input: libflifEncoderInput) {
         images.push(image);
     }
 
+    if (input.options) {
+        setEncoderOptions(encoder, input.options);
+    }
+
     let result: ArrayBuffer;
     try {
         const encodeView = encoder.encodeToMemory();
@@ -141,6 +171,51 @@ function encode(input: libflifEncoderInput) {
         encoder.delete();
     }
     return result;
+}
+
+function setEncoderOptions(encoder: FLIFEncoder, options: libflifEncoderOptions) {
+    if (options.alphaZeroLossless) {
+        encoder.setAlphaZeroLossless();
+    }
+    if ("autoColorBuckets" in options) {
+        encoder.setAutoColorBuckets(options.autoColorBuckets);
+    }
+    if ("chanceAlpha" in options) {
+        encoder.setChanceAlpha(options.chanceAlpha);
+    }
+    if ("chanceCutoff" in options) {
+        encoder.setChanceCutoff(options.chanceCutoff);
+    }
+    if ("crcCheck" in options) {
+        encoder.setCRCCheck(options.crcCheck);
+    }
+    if ("divisor" in options) {
+        encoder.setDivisor(options.divisor);
+    }
+    if ("frameShape" in options) {
+        encoder.setFrameShape(options.frameShape);
+    }
+    if ("interlaced" in options) {
+        encoder.setInterlaced(options.interlaced);
+    }
+    if ("learnRepeat" in options) {
+        encoder.setLearnRepeat(options.learnRepeat);
+    }
+    if ("lookback" in options) {
+        encoder.setLookback(options.lookback);
+    }
+    if ("minSize" in options) {
+        encoder.setMinSize(options.minSize);
+    }
+    if ("paletteSize" in options) {
+        encoder.setPaletteSize(options.paletteSize);
+    }
+    if ("splitThreshold" in options) {
+        encoder.setSplitThreshold(options.splitThreshold);
+    }
+    if ("yCoCg" in options) {
+        encoder.setYCoCg(options.yCoCg);
+    }
 }
 
 namespace EmscriptenUtility {

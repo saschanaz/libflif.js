@@ -35,6 +35,8 @@ declare interface FLIFDecoder extends EmscriptenClass {
 
     getImage(index: number): FLIFImage;
     abort(): number;
+
+    setCRCCheck(crcCheck: boolean): void;
     setQuality(quality: number): void;
     setScale(scale: number): void;
     setResize(width: number, height: number): void;
@@ -60,7 +62,7 @@ declare interface FLIFEncoder extends EmscriptenClass {
     setLookback(lookback: number): void;
     setDivisor(divisor: number): void;
     setMinSize(minSize: number): void;
-    setThreshold(threshold: number): void;
+    setSplitThreshold(threshold: number): void;
     setAlphaZeroLossless(): void;
     setChanceCutoff(cutoff: number): void;
     setChanceAlpha(alpha: number): void;

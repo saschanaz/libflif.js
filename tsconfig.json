@@ -2,8 +2,7 @@
     "compilerOptions": {
         "target": "es6",
         "module": "commonjs",
-        "noImplicitAny": true,
-        "suppressImplicitAnyIndexErrors": true
+        "noImplicitAny": true
     },
     "files": [
         "Jakefile-main.ts",

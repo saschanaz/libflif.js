@@ -5,7 +5,8 @@ interface libflifDecoderOptions {
     resize?: [number, number];
     fit?: [number, number];
     
-    // libflif.js specific
+    // progressive callback
+    progressiveInitialLimit?: number;
     progressiveStep?: number;
 }
 
@@ -35,7 +36,7 @@ interface libflifEncoderOptions {
     alphaZeroLossless?: boolean;
     chanceCutoff?: number;
     chanceAlpha?: number;
-    crcCheck?: number;
+    crcCheck?: boolean;
     yCoCg?: boolean;
     frameShape?: boolean;
 }
