@@ -49,7 +49,7 @@ self.addEventListener("message", async (ev: libflifWorkerInputMessageEvent) => {
 })
 
 function decode(uuid: string, input: libflifDecoderInput) {
-    const step = input.options && "progressiveInitialStep" in input.options ? input.options.progressiveStep : 1000;
+    const step = input.options && "progressiveInitialStep" in input.options ? input.options.progressiveStep : 5000;
 
     const decoder = new libflifem.FLIFDecoder();
     const callback = libflifem.Runtime.addFunction((quality: number, bytesRead: number) => {
