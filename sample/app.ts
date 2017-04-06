@@ -8,6 +8,7 @@ declare var encodeButton: HTMLInputElement;
 declare var encodeAnimationButton: HTMLInputElement;
 declare var encodeClipboardButton: HTMLInputElement;
 declare var sampleButton: HTMLInputElement;
+declare var sampleAnimationButton: HTMLInputElement;
 
 const decoderCanvas = document.createElement("canvas");
 const decoderContext = decoderCanvas.getContext("2d");
@@ -105,7 +106,17 @@ document.addEventListener("DOMContentLoaded", () => {
     clearMessage();
     lockButtons();
     try {
-      await loadSample();
+      await loadSample("Lenna");
+    }
+    finally {
+      unlockButtons();
+    }
+  })
+  sampleAnimationButton.addEventListener("click", async () => {
+    clearMessage();
+    lockButtons();
+    try {
+      await loadSample("spinfox");
     }
     finally {
       unlockButtons();
@@ -280,8 +291,8 @@ function getDecodeOption(): libflifDecoderOptions {
   return { progressiveInitialLimit: disableProgressiveBox.checked ? 10000 : 0 }
 }
 
-async function loadSample() {
-  const response = await fetch("sample/Lenna.flif?0.2.0rc18");
+async function loadSample(sampleFileName: string) {
+  const response = await fetch(`sample/${sampleFileName}.flif?0.2.0rc18`);
   const arrayBuffer = await response.arrayBuffer();
 
   stackMessage("Decoding...");
@@ -406,9 +417,9 @@ function stackMessage(text: string) {
 }
 
 function lockButtons() {
-  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = encodeAnimationButton.disabled = true;
+  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = sampleAnimationButton.disabled = encodeAnimationButton.disabled = true;
 }
 
 function unlockButtons() {
-  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = encodeAnimationButton.disabled = false;
+  decodeButton.disabled = encodeButton.disabled = sampleButton.disabled = sampleAnimationButton.disabled = encodeAnimationButton.disabled = false;
 }
