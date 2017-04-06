@@ -23,7 +23,6 @@
     "@types/glob": "^5.0.29",
     "@types/jake": "0.0.27",
     "@types/node": "^6.0.37",
-    "@types/whatwg-fetch": "0.0.30",
     "glob": "^7.0.5",
     "jake": "latest"
   },
