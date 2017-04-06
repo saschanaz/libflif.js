@@ -13,7 +13,7 @@
   "keywords": [
     "flif"
   ],
-  "author": "Kagami Sascha Rosylight",
+  "author": "Kagami Sascha Rosylight <saschanaz@outlook.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/SaschaNaz/libflif.js/issues"

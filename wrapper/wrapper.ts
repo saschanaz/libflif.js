@@ -19,6 +19,7 @@ namespace libflif {
     }
     let worker: Worker;
 
+    /** Call this first to remove worker loading delay before any decoding call. */
     export function startWorker() {
         if (worker) {
             return;
