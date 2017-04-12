@@ -4,11 +4,11 @@ Another trial to get FLIF to the web platform. Sample page [here](//saschanaz.gi
 # Use
 
 1. Get lib/wrapper.js, lib/worker.js, lib/libflif.js, lib/libflif.js.mem in the same directory
-2. (Optionally) define libflifjs object where:
+2. (Optionally) define `libflifjs` global variable of which the format is:
     ```json
     {
-        "libDir": "the directory of worker.js and libflif.js. Insert this if the HTML file and libflifjs files are in different directories.",
-        "debug": "If this is true then worker will emit debug console message."
+        "libDir": "String. the directory of worker.js and libflif.js. Insert this if the HTML file and libflifjs files are in different directories.",
+        "debug": "Boolean. If this is true then worker will emit debug console message."
     }
     ```
 3. Insert lib/wrapper.js script tag on your HTML file

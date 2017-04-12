@@ -49,10 +49,19 @@ self.addEventListener("message", async (ev: libflifWorkerInputMessageEvent) => {
 })
 
 function decode(uuid: string, input: libflifDecoderInput) {
-    const step = input.options && "progressiveInitialStep" in input.options ? input.options.progressiveStep : 5000;
+    const step = (input.options && input.options.progressiveStep) || 5000;
+    let lastPreviewTime = 0;
 
     const decoder = new libflifem.FLIFDecoder();
-    const callback = libflifem.Runtime.addFunction((quality: number, bytesRead: number) => {
+    const callback = libflifem.Runtime.addFunction((infoPointer: number, quality: number, bytesRead: number) => {
+        const now = Date.now();
+        if (quality !== 10000 && now - lastPreviewTime < 600) {
+            return quality + step;
+        }
+        lastPreviewTime = now;
+
+        decoder.generatePreview(infoPointer);
+
         const frames: libflifFrame[] = [];
         for (let i = 0; i < decoder.numImages; i++) {
             const frame = decoder.getImage(i);

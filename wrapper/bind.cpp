@@ -158,8 +158,16 @@ public:
         flif_decoder_set_fit(this->decoder, width, height);
     }
 
+    void generatePreview(size_t info) {
+        flif_decoder_generate_preview((callback_info_t *)info);
+    }
+
     void setCallback(size_t callback) {
-        flif_decoder_set_callback(this->decoder, reinterpret_cast<uint32_t (*)(int32_t,int64_t)>(callback));
+        thread_local auto _callback = reinterpret_cast<uint32_t (*)(uintptr_t,uint32_t,int64_t)>(callback);
+        callback_t wrapped = [](callback_info_t *info, void *user_data) -> uint32_t {
+            return _callback(reinterpret_cast<std::uintptr_t>(info), info->quality, info->bytes_read);
+        };
+        flif_decoder_set_callback(this->decoder, wrapped, NULL);
     }
 
     void setFirstCallbackQuality(int32_t quality) {
@@ -305,6 +313,7 @@ EMSCRIPTEN_BINDINGS(libflifem) {
         .function("setScale", &FLIFDecoderWrapper::setScale)
         .function("setResize", &FLIFDecoderWrapper::setResize)
         .function("setFit", &FLIFDecoderWrapper::setFit)
+        .function("generatePreview", &FLIFDecoderWrapper::generatePreview)
         .function("setCallback", &FLIFDecoderWrapper::setCallback)
         .function("setFirstCallbackQuality", &FLIFDecoderWrapper::setFirstCallbackQuality)
         ;

@@ -41,6 +41,7 @@ declare interface FLIFDecoder extends EmscriptenClass {
     setScale(scale: number): void;
     setResize(width: number, height: number): void;
     setFit(width: number, height: number): void;
+    generatePreview(infoPointer: number): void;
     setCallback(callbackPointer: number): void;
     setFirstCallbackQuality(quality: number): void;
 }
