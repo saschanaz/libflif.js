@@ -3,6 +3,7 @@ declare namespace libflif {
     var debug: boolean;
 }
 declare namespace libflif {
+    /** Call this first to remove worker loading delay before any decoding call. */
     function startWorker(): void;
     function decode(input: ArrayBuffer | Blob, callback: (result: libflifProgressiveDecodingResult) => any, options?: libflifDecoderOptions): Promise<void>;
     function encode(input: libflifEncoderInput): Promise<ArrayBuffer>;
