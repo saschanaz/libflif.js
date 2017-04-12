@@ -73,6 +73,6 @@ interface libflifWorkerOutputMessageData {
 interface libflifProgressiveDecodingResult {
     quality: number;
     bytesRead: number;
-    frames: libflifFrame[]; // actually SharedArrayBuffer
+    frames: libflifFrame[];
     loop: number;
 }
