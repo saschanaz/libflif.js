@@ -24,6 +24,12 @@ declare namespace libflif {
     function encode(input: libflifEncoderInput): Promise<ArrayBuffer>;
 }
 
+interface libflifDecoderInput {
+    data: ArrayBuffer;
+
+    options?: libflifDecoderOptions;
+}
+
 interface libflifDecoderOptions {
     crcCheck?: boolean;
     quality?: number;
@@ -34,6 +40,21 @@ interface libflifDecoderOptions {
     // progressive callback
     progressiveInitialLimit?: number;
     progressiveStep?: number;
+}
+
+interface libflifProgressiveDecodingResult {
+    quality: number;
+    bytesRead: number;
+    frames: libflifFrame[];
+    loop: number;
+}
+
+interface libflifFrame {
+    data: ArrayBuffer;
+    width: number;
+    height: number;
+    depth?: number;
+    frameDelay?: number;
 }
 
 interface libflifEncoderOptions {
@@ -53,18 +74,10 @@ interface libflifEncoderOptions {
     frameShape?: boolean;
 }
 
-interface libflifProgressiveDecodingResult {
-    quality: number;
-    bytesRead: number;
+interface libflifEncoderInput {
     frames: libflifFrame[];
-    loop: number;
-}
+    loop?: number;
 
-interface libflifFrame {
-    data: ArrayBuffer;
-    width: number;
-    height: number;
-    depth?: number;
-    frameDelay?: number;
+    options?: libflifEncoderOptions;
 }
 ```
