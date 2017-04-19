@@ -1,42 +1,41 @@
 const jakeExecOptionBag = {
     printStdout: true,
-    printStderr: true,
-    breakOnError: true
+    printStderr: true
 };
-const jakeAsyncTaskOptionBag = {
-    async: true
-};
+
+function asyncExec(cmds) {
+    return new Promise((resolve, reject) => {
+        try {
+            jake.exec(cmds, () => resolve(), jakeExecOptionBag)
+        }
+        catch (e) {
+            reject(e);
+        }
+    });
+}
 
 desc("Build wrapper");
-task("wrapper", [], () => {
+task("wrapper", async () => {
     console.log("Building wrapper...");
-    jake.exec(["tsc -p wrapper/tsconfig.json"], () => {
-        complete();
-    }, jakeExecOptionBag);
-}, jakeAsyncTaskOptionBag);
+    await asyncExec(["tsc -p wrapper/tsconfig.json"]);
+});
 
 desc("Build worker for wrapper");
-task("worker", [], () => {
+task("worker", async () => {
     console.log("Building worker...");
-    jake.exec(["tsc -p wrapper-worker/tsconfig.json"], () => {
-        complete();
-    }, jakeExecOptionBag);
-}, jakeAsyncTaskOptionBag);
+    await asyncExec(["tsc -p wrapper-worker/tsconfig.json"]);
+});
 
 desc("Build sample app");
-task("sample", [], () => {
+task("sample", async () => {
     console.log("Building sample app...");
-    jake.exec(["tsc -p sample/tsconfig.json"], () => {
-        complete();
-    }, jakeExecOptionBag);
-}, jakeAsyncTaskOptionBag);
+    await asyncExec(["tsc -p sample/tsconfig.json"]);
+});
 
 desc("Build Jakefile-main.js");
-task("main", [], () => {
-    jake.exec(["tsc"], () => {
-        complete();
-    }, jakeExecOptionBag);
-}, jakeAsyncTaskOptionBag);
+task("main", async () => {
+    await asyncExec(["tsc"]);
+});
 
 desc("Build JavaScript part");
 task("js", ["wrapper", "worker", "sample", "main"], () => {
@@ -44,20 +43,16 @@ task("js", ["wrapper", "worker", "sample", "main"], () => {
 });
 
 desc("Run Jakefile-main.js");
-task("cpp", ["main"], () => {
+task("cpp", ["main"], async () => {
     console.log("Building FLIF...");
-    jake.exec(["jake -f Jakefile-main.js libflif"], () => {
-        complete();
-    }, jakeExecOptionBag);
-}, jakeAsyncTaskOptionBag);
+    await asyncExec(["jake -f Jakefile-main.js libflif"]);
+});
 
 desc("Run Jakefile-main.js");
-task("cppdec", ["main"], () => {
+task("cppdec", ["main"], async () => {
     console.log("Building FLIF decoder-only...");
-    jake.exec(["jake -f Jakefile-main.js libflifdec"], () => {
-        complete();
-    }, jakeExecOptionBag);
-}, jakeAsyncTaskOptionBag);
+    await asyncExec(["jake -f Jakefile-main.js libflifdec"]);
+});
 
 desc("Run Jakefile-main.js");
 task("default", ["js", "cpp", "cppdec"], () => {
@@ -65,9 +60,7 @@ task("default", ["js", "cpp", "cppdec"], () => {
 });
 
 desc("Clean");
-task("clean", [], () => {
+task("clean", [], async () => {
     console.log("Cleaning...");
-    jake.exec(["rm -r built/"], () => {
-        complete();
-    }, jakeExecOptionBag);
-}, jakeAsyncTaskOptionBag);
+    await asyncExec(["rm -r built/"]);
+});
