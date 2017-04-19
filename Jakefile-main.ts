@@ -70,39 +70,40 @@ function appendDir(path: string) {
 
 const jakeExecOptionBag: jake.ExecOptions = {
     printStdout: true,
-    printStderr: true,
-    breakOnError: true
+    printStderr: true
 };
-const jakeAsyncTaskOptionBag: jake.TaskOptions = {
-    async: true
-};
+
+function asyncExec(cmds: string[]) {
+    return new Promise((resolve, reject) => {
+        try {
+            jake.exec(cmds, () => resolve(), jakeExecOptionBag)
+        }
+        catch (e) {
+            reject(e);
+        }
+    });
+}
 
 desc("Build FLIF command-line encoding/decoding tool");
-task("commandline", [], () => {
+task("commandline", async () => {
     const command = `${cxx} ${flags} -s INVOKE_RUN=0 ${commandMisc} -std=c++11 ${bind} ${exportName} ${ports} ${optimizations} -g0 -Wall ${filesCpp} ${appendDir("flif.cpp")} -o built/flif.js`;
     console.log(command);
-    jake.exec([command], () => {
-        complete();
-    }, jakeExecOptionBag);
-}, jakeAsyncTaskOptionBag);
+    await asyncExec([command]);
+});
 
 desc("Build libflif");
-task("libflif", [], () => {
+task("libflif", async () => {
     const command = `${cxx} ${flags} ${libMisc} -std=c++11 ${bind} ${exportName} ${ports} ${libOptimizations} -g0 -Wall ${libraryInclude} ${libFilesCpp} ${appendDir("library/flif-interface.cpp")} -o built/libflif.js`;
     console.log(command);
-    jake.exec([command], () => {
-        complete();
-    }, jakeExecOptionBag);
-}, jakeAsyncTaskOptionBag);
+    await asyncExec([command]);
+});
 
 desc("Build libflifdec");
-task("libflifdec", [], () => {
+task("libflifdec", async () => {
     const command = `${cxx} ${flags} ${libdecMisc} -std=c++11 ${bind} ${exportName} ${ports} ${libOptimizations} -g0 -Wall ${libraryInclude} ${libFilesCpp} ${appendDir("library/flif-interface_dec.cpp")} -o built/libflifdec.js`;
     console.log(command);
-    jake.exec([command], () => {
-        complete();
-    }, jakeExecOptionBag);
-}, jakeAsyncTaskOptionBag);
+    await asyncExec([command]);
+});
 
 desc("Builds libflif.js");
 task("default", ["commandline"], () => {
