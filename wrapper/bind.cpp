@@ -159,15 +159,11 @@ public:
     }
 
     void generatePreview(size_t info) {
-        flif_decoder_generate_preview((callback_info_t *)info);
+        flif_decoder_generate_preview((void *)info);
     }
 
     void setCallback(size_t callback) {
-        thread_local auto _callback = reinterpret_cast<uint32_t (*)(uintptr_t,uint32_t,int64_t)>(callback);
-        callback_t wrapped = [](callback_info_t *info, void *user_data) -> uint32_t {
-            return _callback(reinterpret_cast<std::uintptr_t>(info), info->quality, info->bytes_read);
-        };
-        flif_decoder_set_callback(this->decoder, wrapped, NULL);
+        flif_decoder_set_callback(this->decoder, (callback_t)callback, NULL);
     }
 
     void setFirstCallbackQuality(int32_t quality) {

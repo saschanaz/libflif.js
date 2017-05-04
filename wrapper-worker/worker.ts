@@ -53,14 +53,14 @@ function decode(uuid: string, input: libflifDecoderInput) {
     let lastPreviewTime = 0;
 
     const decoder = new libflifem.FLIFDecoder();
-    const callback = libflifem.Runtime.addFunction((infoPointer: number, quality: number, bytesRead: number) => {
+    const callback = libflifem.Runtime.addFunction((quality: number, bytesReadLow: number, bytesReadHigh: number, decode_over: number, user_data: number, context: number) => {
         const now = Date.now();
         if (quality !== 10000 && now - lastPreviewTime < 600) {
             return quality + step;
         }
         lastPreviewTime = now;
 
-        decoder.generatePreview(infoPointer);
+        decoder.generatePreview(context);
 
         const frames: libflifFrame[] = [];
         for (let i = 0; i < decoder.numImages; i++) {
@@ -83,6 +83,7 @@ function decode(uuid: string, input: libflifDecoderInput) {
             frame.delete(); // will not affect decoder internal image instance 
         }
 
+        const bytesRead = bytesReadLow + bytesReadHigh << 32;
         const progress: libflifProgressiveDecodingResult = {
             quality,
             bytesRead,
