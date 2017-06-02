@@ -163,7 +163,11 @@ public:
     }
 
     void setCallback(size_t callback) {
-        flif_decoder_set_callback(this->decoder, (callback_t)callback, NULL);
+        thread_local auto _callback = reinterpret_cast<uint32_t (*)(uint32_t, int32_t, int32_t, bool, uintptr_t, uintptr_t)>(callback);
+        callback_t wrapped = [](uint32_t quality, int64_t bytes_read, uint8_t decode_over, void *user_data, void *context) -> uint32_t {
+            return _callback(quality, (uint32_t)(bytes_read & 0xFFFFFFFF), (uint32_t)(bytes_read & 0xFFFFFFFF00000000), decode_over, (uintptr_t)user_data, (uintptr_t)context);
+        };
+        flif_decoder_set_callback(this->decoder, wrapped, NULL);
     }
 
     void setFirstCallbackQuality(int32_t quality) {

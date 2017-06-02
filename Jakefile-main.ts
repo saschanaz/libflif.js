@@ -9,9 +9,9 @@ const optimizations = "-D NDEBUG -O2 -ftree-vectorize";
 const flags = "-D LODEPNG_NO_COMPILE_PNG -D LODEPNG_NO_COMPILE_DISK";
 const misc = "-s ALLOW_MEMORY_GROWTH=1 -s DEMANGLE_SUPPORT=1"
 const commandMisc = `${misc} -s EXTRA_EXPORTED_RUNTIME_METHODS=['FS']`;
-const libMisc = `${misc} -s RESERVED_FUNCTION_POINTERS=20 -s NO_FILESYSTEM=1`;
+const libMisc = `${misc} -s RESERVED_FUNCTION_POINTERS=20 -s NO_FILESYSTEM=1 -s WASM=1 -s NO_EXIT_RUNTIME=1 -s BINARYEN_METHOD='native-wasm,asmjs'`;
 const libdecMisc = `${libMisc} -D DECODER_ONLY`;
-const libOptimizations = "-D NDEBUG -Oz --llvm-lto 1 -s USE_SDL=0 -s ELIMINATE_DUPLICATE_FUNCTIONS=1";
+const libOptimizations = "-D NDEBUG -Oz --llvm-lto 1 -s USE_SDL=0";
 
 const libraryInclude = `-I ${appendDir("library/")}`
 
