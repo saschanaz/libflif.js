@@ -1,13 +1,9 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2015",
         "module": "commonjs",
-        "noImplicitAny": true
-    },
-    "files": [
-        "Jakefile-main.ts",
-        "node_modules/@types/node/index.d.ts",
-        "node_modules/@types/glob/index.d.ts",
-        "node_modules/@types/jake/index.d.ts"
-    ]
+        "noImplicitAny": true,
+        "allowJs": true,
+        "checkJs": true
+    }
 }

@@ -1,5 +1,5 @@
-import glob = require("glob");
-import fs = require("fs");
+const glob = require("glob");
+const fs = require("fs");
 
 const cxx = "em++";
 const exportName = "-s EXPORT_NAME='_libflifem' -s MODULARIZE=1";
@@ -64,16 +64,19 @@ const libFilesCpp = [
     "io.cpp",
 ].map(item => appendDir(item)).join(' ');
 
-function appendDir(path: string) {
+/** @param {string} path */
+function appendDir(path) {
     return `submodules/flif/src/${path}`;
 }
 
-const jakeExecOptionBag: jake.ExecOptions = {
+/** @type {jake.ExecOptions} */
+const jakeExecOptionBag = {
     printStdout: true,
     printStderr: true
 };
 
-function asyncExec(cmds: string[]) {
+/** @param {string[]} cmds */
+function asyncExec(cmds) {
     return new Promise((resolve, reject) => {
         try {
             jake.exec(cmds, () => resolve(), jakeExecOptionBag)
@@ -106,6 +109,4 @@ task("libflifdec", async () => {
 });
 
 desc("Builds libflif.js");
-task("default", ["commandline"], () => {
-
-});
+task("default", ["commandline"]);

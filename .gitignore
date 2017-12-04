@@ -1,6 +1,5 @@
 # Build result
 built/
-Jakefile-main.js
 wrapper/*.js
 wrapper/*.d.ts
 
