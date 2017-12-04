@@ -123,14 +123,10 @@ task("sample", async () => {
 });
 
 desc("Build JavaScript part");
-task("js", ["wrapper", "worker", "sample"], () => {
-
-});
+task("js", ["wrapper", "worker", "sample"]);
 
 desc("Build all");
-task("default", ["js", "lib", "libdec"], () => {
-
-});
+task("default", ["js", "lib", "libdec"]);
 
 desc("Clean");
 task("clean", [], () => {
